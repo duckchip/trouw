@@ -161,16 +161,26 @@ function App() {
             </span>
           </motion.div>
 
+          {/* RSVP Button */}
+          <motion.a
+            variants={fadeInUp}
+            href="#rsvp"
+            className="inline-flex items-center gap-2 bg-navy text-white py-4 px-10 rounded-full font-medium text-lg hover:bg-navy-dark transition-all hover:shadow-xl shadow-lg"
+          >
+            Bevestig je komst
+          </motion.a>
         </motion.div>
 
         {/* Scroll Indicator */}
-        <motion.div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        <motion.button
+          onClick={() => document.getElementById('love-counter')?.scrollIntoView({ behavior: 'smooth' })}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer hover:scale-110 transition-transform"
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
+          aria-label="Scroll naar beneden"
         >
           <ChevronDown className="w-8 h-8 text-dusty-light" />
-        </motion.div>
+        </motion.button>
       </section>
 
       {/* Love Counter - Pukkelpop first kiss */}

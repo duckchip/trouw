@@ -48,7 +48,7 @@ export default function LoveCounter() {
   ];
 
   return (
-    <section className="py-12 md:py-16 px-6 bg-gradient-to-b from-cream to-white">
+    <section id="love-counter" className="py-12 md:py-16 px-6 bg-gradient-to-b from-cream to-white">
       <motion.div
         className="max-w-2xl mx-auto text-center"
         initial={{ opacity: 0, y: 20 }}
