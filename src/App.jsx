@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import InfiniteGallery from './components/InfiniteGallery';
 import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
+import LoveCounter from './components/LoveCounter';
 
 // Gift Info Component
 function GiftInfo() {
@@ -160,14 +161,6 @@ function App() {
             </span>
           </motion.div>
 
-          {/* CTA Button */}
-          <motion.a
-            variants={fadeInUp}
-            href="#rsvp"
-            className="inline-flex items-center gap-2 bg-navy text-white py-4 px-10 rounded-full font-medium text-lg hover:bg-navy-dark transition-all hover:shadow-xl shadow-lg"
-          >
-            Bevestig je komst
-          </motion.a>
         </motion.div>
 
         {/* Scroll Indicator */}
@@ -180,18 +173,22 @@ function App() {
         </motion.div>
       </section>
 
-      {/* Gallery Section */}
+      {/* Love Counter - Pukkelpop first kiss */}
+      <LoveCounter />
+
+      {/* Gallery Section - Proposal photos */}
       <section className="py-16 md:py-24">
         <motion.div 
-          className="text-center mb-12 px-6"
+          className="text-center mb-8 px-6"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="font-serif text-4xl md:text-5xl text-navy mb-4">
-            Die ene avond op Pukkelpop...
+          <h2 className="font-serif text-4xl md:text-5xl text-navy mb-3">
+            En toen zei ze ja! 💍
           </h2>
+          <p className="text-dusty text-lg mb-1">Pukkelpop, 15 augustus 2025</p>
         </motion.div>
         
         <InfiniteGallery />
