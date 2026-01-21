@@ -213,7 +213,7 @@ function App() {
             31 Juli 2026 • Hoboken, België
           </p>
           <p className="text-dusty-light text-xs mt-8">
-            Made with ♥ for our special day
+            Made with ♥ by a 🤓
           </p>
         </motion.div>
       </footer>
