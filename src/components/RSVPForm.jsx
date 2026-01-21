@@ -277,7 +277,7 @@ export default function RSVPForm() {
 
     // Check if it's a valid code
     if (INVITE_CODES[code]) {
-      window.location.href = `${window.location.origin}${window.location.pathname}?i=${code}`;
+      window.location.href = `${window.location.origin}${window.location.pathname}?i=${code}#rsvp`;
     } else {
       setCodeError('Ongeldige code. Controleer je uitnodiging.');
     }
