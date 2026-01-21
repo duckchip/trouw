@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useAnimationFrame, useTransform } from 'framer-motion';
+import { useRef, useState } from 'react';
 
 // Engagement/proposal photos - the real deal! 💍
 const images = [
@@ -11,45 +12,100 @@ const images = [
   '/images/proposal-7.jpg',
 ];
 
-// Double the images for seamless looping
-const duplicatedImages = [...images, ...images];
+// Triple the images for seamless looping
+const duplicatedImages = [...images, ...images, ...images];
 
 export default function InfiniteGallery() {
+  const containerRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  // Base position for auto-scroll
+  const baseX = useMotionValue(0);
+  // Manual drag offset
+  const dragX = useMotionValue(0);
+  // Combined position
+  const x = useTransform([baseX, dragX], ([base, drag]) => base + drag);
+
+  // Calculate single set width (7 images * (288px + 24px gap))
+  const singleSetWidth = images.length * (288 + 24);
+
+  // Auto-scroll animation
+  useAnimationFrame((_, delta) => {
+    if (isPaused || isDragging) return;
+    
+    // Move left at consistent speed
+    const newX = baseX.get() - delta * 0.05;
+    
+    // Reset to create infinite loop
+    if (Math.abs(newX) >= singleSetWidth) {
+      baseX.set(newX + singleSetWidth);
+    } else {
+      baseX.set(newX);
+    }
+  });
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    // Smoothly merge drag offset into base
+    baseX.set(baseX.get() + dragX.get());
+    dragX.set(0);
+  };
+
   return (
-    <div className="relative w-full overflow-hidden py-12 bg-cream-dark/50">
+    <div 
+      ref={containerRef}
+      className="relative w-full overflow-hidden py-12 bg-cream-dark/50 cursor-grab active:cursor-grabbing"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+    >
       {/* Gradient overlays for smooth edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-cream to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-cream to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-cream to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-cream to-transparent z-10 pointer-events-none" />
       
+      {/* Drag hint */}
+      <motion.p 
+        className="absolute top-2 left-1/2 -translate-x-1/2 text-xs text-dusty-light z-20 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2 }}
+      >
+        ← Swipe om te bladeren →
+      </motion.p>
+
       <motion.div
         className="flex gap-6"
-        animate={{
-          x: ['0%', '-50%'],
-        }}
-        transition={{
-          x: {
-            repeat: Infinity,
-            repeatType: 'loop',
-            duration: 30,
-            ease: 'linear',
-          },
-        }}
+        style={{ x }}
+        drag="x"
+        dragConstraints={{ left: -singleSetWidth * 2, right: singleSetWidth }}
+        dragElastic={0.1}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        whileTap={{ cursor: 'grabbing' }}
       >
         {duplicatedImages.map((src, index) => (
-          <div
+          <motion.div
             key={index}
             className="flex-shrink-0 w-72 h-48 md:w-96 md:h-64 rounded-xl overflow-hidden shadow-lg"
+            whileHover={{ scale: 1.05, zIndex: 10 }}
+            transition={{ duration: 0.3 }}
           >
             <img
               src={src}
-              alt={`Wedding moment ${(index % images.length) + 1}`}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              alt={`Moment ${(index % images.length) + 1}`}
+              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
               loading="lazy"
+              draggable={false}
             />
-          </div>
+          </motion.div>
         ))}
       </motion.div>
     </div>
   );
 }
-
