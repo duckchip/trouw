@@ -1,5 +1,5 @@
-import { motion, useMotionValue, useAnimationFrame, useTransform } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { motion, useMotionValue, animate } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 
 // Engagement/proposal photos - the real deal! 💍
 const images = [
@@ -17,53 +17,98 @@ const duplicatedImages = [...images, ...images, ...images];
 
 export default function InfiniteGallery() {
   const containerRef = useRef(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  
-  // Base position for auto-scroll
-  const baseX = useMotionValue(0);
-  // Manual drag offset
-  const dragX = useMotionValue(0);
-  // Combined position
-  const x = useTransform([baseX, dragX], ([base, drag]) => base + drag);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const x = useMotionValue(0);
+  const animationRef = useRef(null);
 
   // Calculate single set width (7 images * (288px + 24px gap))
   const singleSetWidth = images.length * (288 + 24);
 
-  // Auto-scroll animation
-  useAnimationFrame((_, delta) => {
-    if (isPaused || isDragging) return;
-    
-    // Move left at consistent speed
-    const newX = baseX.get() - delta * 0.05;
-    
-    // Reset to create infinite loop
-    if (Math.abs(newX) >= singleSetWidth) {
-      baseX.set(newX + singleSetWidth);
-    } else {
-      baseX.set(newX);
+  // Start auto-scroll animation
+  const startAutoScroll = () => {
+    if (animationRef.current) {
+      animationRef.current.stop();
     }
-  });
+
+    const currentX = x.get();
+    // Calculate remaining distance to complete one loop
+    const targetX = currentX - singleSetWidth;
+    // Calculate duration based on remaining distance (consistent speed)
+    const remainingDistance = Math.abs(targetX - currentX);
+    const duration = remainingDistance / 50; // pixels per second
+
+    animationRef.current = animate(x, targetX, {
+      duration,
+      ease: 'linear',
+      onComplete: () => {
+        // Reset position and restart
+        x.set(currentX % singleSetWidth || 0);
+        if (!isInteracting) {
+          startAutoScroll();
+        }
+      },
+    });
+  };
+
+  // Stop auto-scroll
+  const stopAutoScroll = () => {
+    if (animationRef.current) {
+      animationRef.current.stop();
+      animationRef.current = null;
+    }
+  };
+
+  // Handle interaction state changes
+  useEffect(() => {
+    if (isInteracting) {
+      stopAutoScroll();
+    } else {
+      // Small delay before restarting auto-scroll
+      const timeout = setTimeout(() => {
+        startAutoScroll();
+      }, 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [isInteracting]);
+
+  // Initial auto-scroll
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      startAutoScroll();
+    }, 1000);
+    return () => {
+      clearTimeout(timeout);
+      stopAutoScroll();
+    };
+  }, []);
 
   const handleDragStart = () => {
-    setIsDragging(true);
+    setIsInteracting(true);
   };
 
   const handleDragEnd = () => {
-    setIsDragging(false);
-    // Smoothly merge drag offset into base
-    baseX.set(baseX.get() + dragX.get());
-    dragX.set(0);
+    // Normalize position to prevent drifting too far
+    const currentX = x.get();
+    if (currentX > 0) {
+      x.set(currentX - singleSetWidth);
+    } else if (currentX < -singleSetWidth * 2) {
+      x.set(currentX + singleSetWidth);
+    }
+    
+    // Resume auto-scroll after a delay
+    setTimeout(() => {
+      setIsInteracting(false);
+    }, 100);
   };
 
   return (
     <div 
       ref={containerRef}
-      className="relative w-full overflow-hidden py-12 bg-cream-dark/50 cursor-grab active:cursor-grabbing"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
+      className="relative w-full overflow-hidden py-12 bg-cream-dark/50"
+      onMouseEnter={() => setIsInteracting(true)}
+      onMouseLeave={() => setIsInteracting(false)}
+      onTouchStart={() => setIsInteracting(true)}
+      onTouchEnd={() => setTimeout(() => setIsInteracting(false), 100)}
     >
       {/* Gradient overlays for smooth edges */}
       <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-cream to-transparent z-10 pointer-events-none" />
@@ -80,20 +125,20 @@ export default function InfiniteGallery() {
       </motion.p>
 
       <motion.div
-        className="flex gap-6"
+        className="flex gap-6 cursor-grab active:cursor-grabbing"
         style={{ x }}
         drag="x"
         dragConstraints={{ left: -singleSetWidth * 2, right: singleSetWidth }}
-        dragElastic={0.1}
+        dragElastic={0.05}
+        dragTransition={{ bounceStiffness: 300, bounceDamping: 30 }}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        whileTap={{ cursor: 'grabbing' }}
       >
         {duplicatedImages.map((src, index) => (
           <motion.div
             key={index}
             className="flex-shrink-0 w-72 h-48 md:w-96 md:h-64 rounded-xl overflow-hidden shadow-lg"
-            whileHover={{ scale: 1.05, zIndex: 10 }}
+            whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.3 }}
           >
             <img
