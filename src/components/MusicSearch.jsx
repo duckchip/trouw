@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, Music, X, Plus, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,47 +9,43 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchKey, setSearchKey] = useState(0); // Force re-render key
   const debounceRef = useRef(null);
   const searchInputRef = useRef(null);
-  const abortControllerRef = useRef(null);
 
-  // Cleanup on unmount
+  // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
     };
   }, []);
 
   // Search iTunes API
-  const searchTracks = useCallback(async (query) => {
+  const searchTracks = async (query) => {
     if (!query.trim()) {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
-
-    // Abort any previous request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
 
     setIsSearching(true);
     
     try {
       const response = await fetch(
-        `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`,
-        { signal: abortControllerRef.current.signal }
+        `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`
       );
+      
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+      
       const data = await response.json();
       
       // Transform iTunes results to our format
-      const tracks = (data.results || []).map(track => ({
-        id: track.trackId?.toString() || Math.random().toString(),
+      const tracks = (data.results || []).map((track, index) => ({
+        id: track.trackId?.toString() || `track-${index}`,
         name: track.trackName || 'Unknown',
         artist: track.artistName || 'Unknown Artist',
         album: track.collectionName || 'Unknown Album',
@@ -58,32 +54,36 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
       
       setSearchResults(tracks);
     } catch (error) {
-      if (error.name !== 'AbortError') {
-        console.error('Search error:', error);
-        setSearchResults([]);
-      }
+      console.error('Search error:', error);
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
-  }, []);
+  };
 
-  // Debounced search
+  // Handle input change with debounce
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
     
+    // Clear previous debounce
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
     
+    // Clear results immediately if empty
     if (!query.trim()) {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
     
+    // Debounce the search
+    setIsSearching(true);
     debounceRef.current = setTimeout(() => {
       searchTracks(query);
-    }, 400);
+    }, 500);
   };
 
   // Focus search input and scroll into view
@@ -99,16 +99,23 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const addSong = (track) => {
     if (selectedSongs.length >= 3) return;
     if (selectedSongs.some(s => s.id === track.id)) return;
+    
+    // Add the song
     onSongsChange([...selectedSongs, track]);
+    
+    // Reset search state completely
     setSearchQuery('');
     setSearchResults([]);
+    setIsSearching(false);
     
-    // Refocus input after a short delay for next search
-    if (selectedSongs.length < 2) {
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
+    // Clear any pending debounce
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
+    
+    // Force component key update for clean state
+    setSearchKey(prev => prev + 1);
   };
 
   const removeSong = (trackId) => {
@@ -119,62 +126,70 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
 
   return (
     <div className="space-y-4">
-      {/* Search Input - Now at the top for better mobile UX */}
+      {/* Search Input */}
       {canAddMore && (
-        <div className="relative">
+        <div className="relative" key={`search-${searchKey}`}>
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="w-5 h-5 text-dusty" />
           </div>
           <input
             ref={searchInputRef}
-            type="text"
+            type="search"
+            inputMode="search"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Zoek een nummer of artiest..."
-            className="w-full pl-12 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors"
+            className="w-full pl-12 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors text-base"
+            style={{ fontSize: '16px' }} // Prevents iOS zoom on focus
           />
           
           {/* Search Results Dropdown */}
-          <AnimatePresence>
-            {searchResults.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-50 max-h-80 overflow-y-auto"
-              >
-                {searchResults.map((track) => {
-                  const isSelected = selectedSongs.some(s => s.id === track.id);
-                  return (
-                    <button
-                      type="button"
-                      key={track.id}
-                      onClick={() => !isSelected && addSong(track)}
-                      disabled={isSelected}
-                      className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
-                        isSelected 
-                          ? 'bg-cream-dark/50 opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-cream-dark/30 active:bg-cream-dark/50'
-                      }`}
-                    >
+          {searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-50 max-h-80 overflow-y-auto">
+              {searchResults.map((track) => {
+                const isSelected = selectedSongs.some(s => s.id === track.id);
+                return (
+                  <button
+                    type="button"
+                    key={track.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!isSelected) {
+                        addSong(track);
+                      }
+                    }}
+                    disabled={isSelected}
+                    className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
+                      isSelected 
+                        ? 'bg-cream-dark/50 opacity-50 cursor-not-allowed' 
+                        : 'hover:bg-cream-dark/30 active:bg-cream-dark/50'
+                    }`}
+                  >
+                    {track.albumArt && (
                       <img 
                         src={track.albumArt} 
                         alt="" 
                         className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                        loading="lazy"
                       />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-navy truncate">{track.name}</p>
-                        <p className="text-sm text-dusty truncate">{track.artist}</p>
-                      </div>
-                      {!isSelected && (
-                        <Plus className="w-5 h-5 text-navy flex-shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-navy truncate">{track.name}</p>
+                      <p className="text-sm text-dusty truncate">{track.artist}</p>
+                    </div>
+                    {!isSelected && (
+                      <Plus className="w-5 h-5 text-navy flex-shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           
           {isSearching && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -193,7 +208,6 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
         
         <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <AnimatePresence mode="popLayout">
-            {/* Always show 3 slots */}
             {[0, 1, 2].map((slotIndex) => {
               const song = selectedSongs[slotIndex];
               
@@ -217,11 +231,14 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                     </button>
                     
                     <div className="aspect-square relative">
-                      <img 
-                        src={song.albumArt} 
-                        alt={`${song.album} album art`}
-                        className="w-full h-full object-cover"
-                      />
+                      {song.albumArt && (
+                        <img 
+                          src={song.albumArt} 
+                          alt={`${song.album} album art`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      )}
                       <div className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 bg-navy/80 text-white text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-medium">
                         #{slotIndex + 1}
                       </div>
@@ -235,7 +252,6 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                 );
               }
               
-              // Empty slot - clickable to focus search
               return (
                 <motion.button
                   type="button"

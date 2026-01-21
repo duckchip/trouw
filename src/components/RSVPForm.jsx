@@ -10,17 +10,62 @@ const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || '';
 
 // All event options with times
 const allEventOptions = [
-  { id: 'reception', label: 'Receptie', time: '17:00', icon: '🥂' },
-  { id: 'dinner', label: 'Diner', time: '19:00', icon: '🍽️' },
-  { id: 'party', label: 'Feest', time: '21:00', icon: '🎉' },
+  { id: 'ceremony', label: 'Ceremonie', time: '11:00', icon: '💍', location: 'Oude Vredegerecht, Berchem' },
+  { id: 'reception', label: 'Receptie', time: '17:00', icon: '🥂', location: 'Outfort, Hoboken' },
+  { id: 'dinner', label: 'Diner', time: '19:00', icon: '🍽️', location: 'Outfort, Hoboken' },
+  { id: 'party', label: 'Feest', time: '21:00', icon: '🎉', location: 'Outfort, Hoboken' },
 ];
 
 // Obfuscated invite codes - change these to your own random strings!
 const INVITE_CODES = {
-  'r7x2k': 'reception',
-  'd9m4p': 'dinner',
-  'p5n1q': 'partyonly',
-  'f3h8w': 'full',
+  'c2m7j': 'ceremony',     // Ceremony only (11:00)
+  'a4k9n': 'ceremonyall',  // Ceremony + Reception + Dinner + Party (full day from 11:00)
+  'r7x2k': 'reception',    // Reception only (17:00)
+  'd9m4p': 'dinner',       // Reception + Dinner (17:00 + 19:00)
+  'p5n1q': 'partyonly',    // Party only (21:00)
+  'f3h8w': 'full',         // Reception + Dinner + Party (17:00 onwards)
+};
+
+// Invite level descriptions
+const INVITE_DESCRIPTIONS = {
+  'ceremony': {
+    title: 'Jullie zijn uitgenodigd voor de huwelijksceremonie',
+    description: 'Om 11:00 trouwen we in het Oude Vredegerecht te Berchem. We verwachten jullie tussen 11:00 en 11:30.',
+    icon: '💍',
+    extraLocation: {
+      name: 'Oude Vredegerecht',
+      address: 'Grote Steenweg 13, 2600 Berchem',
+    },
+  },
+  'ceremonyall': {
+    title: 'Jullie zijn uitgenodigd voor de hele dag',
+    description: 'Om 11:00 trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf 17:00 in Outfort voor de receptie, het diner en het feest.',
+    icon: '💒',
+    extraLocation: {
+      name: 'Oude Vredegerecht',
+      address: 'Grote Steenweg 13, 2600 Berchem',
+    },
+  },
+  'reception': {
+    title: 'Jullie zijn uitgenodigd voor de receptie',
+    description: 'Vanaf 17:00 verwelkomen we jullie graag voor een gezellige receptie in Outfort.',
+    icon: '🥂',
+  },
+  'dinner': {
+    title: 'Jullie zijn uitgenodigd voor de receptie en het diner',
+    description: 'Vanaf 17:00 verwelkomen we jullie graag in Outfort. Om 19:00 schuiven we aan voor het diner.',
+    icon: '🍽️',
+  },
+  'partyonly': {
+    title: 'Jullie zijn uitgenodigd voor het avondfeest',
+    description: 'Vanaf 21:00 verwelkomen we jullie graag in Outfort om samen te feesten!',
+    icon: '🎉',
+  },
+  'full': {
+    title: 'Jullie zijn uitgenodigd voor de receptie, het diner en het feest',
+    description: 'Vanaf 17:00 verwelkomen we jullie in Outfort voor de receptie, gevolgd door het diner om 19:00 en het feest om 21:00.',
+    icon: '🥳',
+  },
 };
 
 function getInviteLevel() {
@@ -108,6 +153,10 @@ export default function RSVPForm() {
   const availableEvents = useMemo(() => {
     if (!inviteLevel) return [];
     switch (inviteLevel) {
+      case 'ceremony':
+        return allEventOptions.filter((e) => e.id === 'ceremony');
+      case 'ceremonyall':
+        return allEventOptions; // All events including ceremony
       case 'reception':
         return allEventOptions.filter((e) => e.id === 'reception');
       case 'dinner':
@@ -115,7 +164,7 @@ export default function RSVPForm() {
       case 'partyonly':
         return allEventOptions.filter((e) => e.id === 'party');
       case 'full':
-        return allEventOptions;
+        return allEventOptions.filter((e) => e.id !== 'ceremony'); // Reception, dinner, party (no ceremony)
       default:
         return [];
     }
@@ -124,9 +173,11 @@ export default function RSVPForm() {
   const singleEvent = availableEvents.length === 1;
 
   const showDietary = useMemo(() => {
-    if (inviteLevel === 'partyonly') return false;
+    // Party-only and ceremony-only guests don't need dietary
+    if (inviteLevel === 'partyonly' || inviteLevel === 'ceremony') return false;
     if (singleEvent && availableEvents.length > 0) {
-      return availableEvents[0]?.id === 'reception' || availableEvents[0]?.id === 'dinner';
+      const eventId = availableEvents[0]?.id;
+      return eventId === 'reception' || eventId === 'dinner';
     }
     return eventType === 'reception' || eventType === 'dinner';
   }, [inviteLevel, singleEvent, availableEvents, eventType]);
@@ -330,8 +381,36 @@ export default function RSVPForm() {
     );
   }
 
+  const inviteInfo = INVITE_DESCRIPTIONS[inviteLevel];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Invite Info Banner */}
+      {inviteInfo && (
+        <div className="bg-gradient-to-r from-navy/5 to-gold/10 rounded-xl p-5 text-center border border-cream-dark">
+          <span className="text-3xl mb-2 block">{inviteInfo.icon}</span>
+          <h3 className="font-serif text-lg md:text-xl text-navy mb-2">{inviteInfo.title}</h3>
+          <p className="text-sm text-dusty">{inviteInfo.description}</p>
+          
+          {/* Extra location for ceremony */}
+          {inviteInfo.extraLocation && (
+            <div className="mt-4 pt-4 border-t border-cream-dark">
+              <p className="text-xs text-dusty uppercase tracking-wide mb-1">Locatie ceremonie</p>
+              <p className="text-sm font-medium text-navy">{inviteInfo.extraLocation.name}</p>
+              <p className="text-sm text-dusty">{inviteInfo.extraLocation.address}</p>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(inviteInfo.extraLocation.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-xs text-navy underline underline-offset-2 hover:text-navy-dark"
+              >
+                Routebeschrijving →
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Guest Names */}
       <div className="space-y-4">
         <label className="flex items-center gap-2 text-navy font-medium">
