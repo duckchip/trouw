@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { User, Check, X, MessageSquare, Send, Loader2, PartyPopper, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import SpotifySearch from './SpotifySearch';
+import MusicSearch from './MusicSearch';
 
 // Google Apps Script Web App URL from environment variable
 const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || '';
@@ -340,10 +340,10 @@ export default function RSVPForm() {
                 <p className="text-dusty text-sm">
                   Kies tot 3 nummers die je graag wilt horen op ons feest!
                 </p>
-                <SpotifySearch 
-                  selectedSongs={selectedSongs}
-                  onSongsChange={setSelectedSongs}
-                />
+<MusicSearch 
+                selectedSongs={selectedSongs}
+                onSongsChange={setSelectedSongs}
+              />
               </div>
             )}
           </motion.div>

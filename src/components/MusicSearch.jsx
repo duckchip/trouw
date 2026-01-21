@@ -1,26 +1,17 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Search, Music, X, Plus, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Mock tracks for demonstration
-// To use real Spotify API, add VITE_SPOTIFY_CLIENT_ID to .env and implement OAuth flow
-const mockTracks = [
-  { id: '1', name: 'Perfect', artist: 'Ed Sheeran', album: 'Divide', albumArt: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=200&h=200&fit=crop' },
-  { id: '2', name: 'Thinking Out Loud', artist: 'Ed Sheeran', album: 'x', albumArt: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop' },
-  { id: '3', name: 'All of Me', artist: 'John Legend', album: 'Love in the Future', albumArt: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop' },
-  { id: '4', name: 'A Thousand Years', artist: 'Christina Perri', album: 'The Twilight Saga', albumArt: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop' },
-  { id: '5', name: 'Can\'t Help Falling in Love', artist: 'Elvis Presley', album: 'Blue Hawaii', albumArt: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=200&h=200&fit=crop' },
-  { id: '6', name: 'Marry You', artist: 'Bruno Mars', album: 'Doo-Wops & Hooligans', albumArt: 'https://images.unsplash.com/photo-1504898770365-14faca6a7320?w=200&h=200&fit=crop' },
-  { id: '7', name: 'At Last', artist: 'Etta James', album: 'At Last!', albumArt: 'https://images.unsplash.com/photo-1485579149621-3123dd979885?w=200&h=200&fit=crop' },
-  { id: '8', name: 'L-O-V-E', artist: 'Nat King Cole', album: 'L-O-V-E', albumArt: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop' },
-];
+// Using iTunes Search API - free, no API key needed!
+const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
 
 export default function SpotifySearch({ selectedSongs, onSongsChange }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const debounceRef = useRef(null);
 
-  // Simulated Spotify search (replace with actual API call in production)
+  // Search iTunes API
   const searchTracks = useCallback(async (query) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -29,24 +20,44 @@ export default function SpotifySearch({ selectedSongs, onSongsChange }) {
 
     setIsSearching(true);
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Filter mock tracks based on query
-    const filtered = mockTracks.filter(
-      track => 
-        track.name.toLowerCase().includes(query.toLowerCase()) ||
-        track.artist.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setSearchResults(filtered);
-    setIsSearching(false);
+    try {
+      const response = await fetch(
+        `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`
+      );
+      const data = await response.json();
+      
+      // Transform iTunes results to our format
+      const tracks = data.results.map(track => ({
+        id: track.trackId.toString(),
+        name: track.trackName,
+        artist: track.artistName,
+        album: track.collectionName,
+        albumArt: track.artworkUrl100.replace('100x100', '300x300'), // Get higher res
+      }));
+      
+      setSearchResults(tracks);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   }, []);
 
+  // Debounced search
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    searchTracks(query);
+    
+    // Clear previous timeout
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    
+    // Debounce the search
+    debounceRef.current = setTimeout(() => {
+      searchTracks(query);
+    }, 300);
   };
 
   const addSong = (track) => {
@@ -132,7 +143,7 @@ export default function SpotifySearch({ selectedSongs, onSongsChange }) {
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Zoek een nummer..."
+            placeholder="Zoek een nummer of artiest..."
             className="w-full pl-12 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors"
           />
           
@@ -143,7 +154,7 @@ export default function SpotifySearch({ selectedSongs, onSongsChange }) {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-20 max-h-64 overflow-y-auto"
+                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-20 max-h-72 overflow-y-auto"
               >
                 {searchResults.map((track) => {
                   const isSelected = selectedSongs.some(s => s.id === track.id);
@@ -191,4 +202,3 @@ export default function SpotifySearch({ selectedSongs, onSongsChange }) {
     </div>
   );
 }
-
