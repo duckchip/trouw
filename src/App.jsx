@@ -51,6 +51,29 @@ function App() {
         {/* Floating polaroid photos in background */}
         <HeroPhotos />
 
+        {/* Watercolor mockingbird decoration */}
+        <motion.div
+          className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none z-0"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.5, delay: 0.5 }}
+        >
+          <motion.img
+            src="/images/mockingbird.png"
+            alt=""
+            className="w-56 sm:w-72 md:w-96 lg:w-[450px] h-auto opacity-60 sm:opacity-70 md:opacity-80"
+            animate={{ 
+              rotate: [0, 3, 0, -2, 0],
+              y: [0, -8, 0, 5, 0],
+            }}
+            transition={{ 
+              duration: 8, 
+              repeat: Infinity, 
+              ease: 'easeInOut',
+            }}
+          />
+        </motion.div>
+
         <motion.div 
           className="relative z-10 text-center px-6"
           variants={staggerContainer}
