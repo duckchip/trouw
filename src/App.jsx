@@ -1,9 +1,55 @@
-import { Heart, Calendar, MapPin, ChevronDown } from 'lucide-react';
+import { Heart, Calendar, MapPin, ChevronDown, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import InfiniteGallery from './components/InfiniteGallery';
 import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
+
+// Gift Info Component
+function GiftInfo() {
+  const [copied, setCopied] = useState(false);
+  const bankNumber = 'BE82 7330 7478 1168';
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(bankNumber.replace(/\s/g, ''));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <section className="py-10 px-6">
+      <motion.div 
+        className="max-w-md mx-auto text-center"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <p className="text-dusty text-sm mb-2">
+          💌 Een bijdrage is altijd welkom:
+        </p>
+        <div className="flex items-center justify-center gap-2">
+          <span className="font-mono text-sm text-navy">
+            {bankNumber}
+          </span>
+          <button
+            onClick={copyToClipboard}
+            className="p-1.5 hover:bg-navy/10 rounded transition-colors"
+            title="Kopieer"
+          >
+            {copied ? (
+              <Check className="w-4 h-4 text-green-600" />
+            ) : (
+              <Copy className="w-4 h-4 text-dusty" />
+            )}
+          </button>
+        </div>
+        <p className="text-xs text-dusty mt-1">HOFMAN-LOENDERS</p>
+      </motion.div>
+    </section>
+  );
+}
 
 // Animation variants
 const fadeInUp = {
@@ -208,6 +254,9 @@ function App() {
           </motion.div>
         </div>
       </section>
+
+      {/* Gift Info */}
+      <GiftInfo />
 
       {/* Footer */}
       <footer className="py-12 px-6 text-center">

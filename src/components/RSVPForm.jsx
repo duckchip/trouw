@@ -1,9 +1,52 @@
 import { useState, useMemo, useEffect } from 'react';
-import { User, Users, Check, X, MessageSquare, Send, Loader2, Clock, Plus, Trash2, Music } from 'lucide-react';
+import { User, Users, Check, X, MessageSquare, Send, Loader2, Clock, Plus, Trash2, Music, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import MusicSearch from './MusicSearch';
+
+// Gift Info Component - shown after RSVP submission
+function GiftInfo() {
+  const [copied, setCopied] = useState(false);
+  const bankNumber = 'BE82 7330 7478 1168';
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(bankNumber.replace(/\s/g, ''));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 1.2 }}
+      className="mt-8 pt-6 border-t border-cream-dark"
+    >
+      <p className="text-dusty text-sm mb-2">
+        💌 Een bijdrage is altijd welkom:
+      </p>
+      <div className="flex items-center justify-center gap-2">
+        <span className="font-mono text-sm text-navy">
+          {bankNumber}
+        </span>
+        <button
+          type="button"
+          onClick={copyToClipboard}
+          className="p-1.5 hover:bg-navy/10 rounded transition-colors"
+          title="Kopieer"
+        >
+          {copied ? (
+            <Check className="w-4 h-4 text-green-600" />
+          ) : (
+            <Copy className="w-4 h-4 text-dusty" />
+          )}
+        </button>
+      </div>
+      <p className="text-xs text-dusty mt-1">HOFMAN-LOENDERS</p>
+    </motion.div>
+  );
+}
 
 // Google Apps Script Web App URL from environment variable
 const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || '';
@@ -253,6 +296,12 @@ export default function RSVPForm() {
       }
 
       setIsSubmitted(true);
+      
+      // Scroll to top of RSVP section
+      setTimeout(() => {
+        document.getElementById('rsvp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      
       toast.success(
         filledGuests.length > 1
           ? `Bedankt! ${filledGuests.length} gasten geregistreerd.`
@@ -403,6 +452,11 @@ export default function RSVPForm() {
               </motion.span>
             ))}
           </motion.div>
+        )}
+
+        {/* Gift info - only show if attending */}
+        {attendance && (
+          <GiftInfo />
         )}
 
         <motion.button
