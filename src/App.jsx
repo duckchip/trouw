@@ -128,10 +128,9 @@ function App() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="font-serif text-4xl md:text-5xl text-navy mb-4">Onze Momenten</h2>
-          <p className="text-dusty max-w-xl mx-auto">
-            Een glimp van onze reis samen tot nu toe
-          </p>
+          <h2 className="font-serif text-4xl md:text-5xl text-navy mb-4">
+            Die ene avond op Pukkelpop...
+          </h2>
         </motion.div>
         
         <InfiniteGallery />
