@@ -1,4 +1,4 @@
-import { MapPin, Navigation, Clock, Phone } from 'lucide-react';
+import { MapPin, Navigation, Clock, Mail } from 'lucide-react';
 
 // Google Maps API Key from environment variable
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -8,6 +8,16 @@ export default function VenueMap() {
   const venueName = "Outfort";
   const venueAddress = "Hoofdfrontweg 1, 2660 Hoboken, België";
   const venueAddressEncoded = encodeURIComponent(venueAddress);
+
+  // Bot-proof email - split into parts to prevent scraping
+  const emailParts = ['hannaentristan', 'gaantrouwen', '@', 'gmail', '.com'];
+  
+  const handleEmailClick = (e) => {
+    e.preventDefault();
+    // Construct email only on click
+    const email = emailParts[0] + emailParts[1] + emailParts[2] + emailParts[3] + emailParts[4];
+    window.location.href = 'mailto:' + email;
+  };
   
   return (
     <div className="space-y-6">
@@ -76,13 +86,13 @@ export default function VenueMap() {
           Open in Google Maps
         </a>
         
-        <a
-          href="tel:+31612345678"
-          className="flex items-center justify-center gap-2 bg-white text-navy py-3 px-6 rounded-xl border border-navy hover:bg-navy/5 transition-colors font-medium"
+        <button
+          onClick={handleEmailClick}
+          className="flex items-center justify-center gap-2 bg-white text-navy py-3 px-6 rounded-xl border border-navy hover:bg-navy/5 transition-colors font-medium cursor-pointer"
         >
-          <Phone className="w-5 h-5" />
-          Bel voor vragen
-        </a>
+          <Mail className="w-5 h-5" />
+          Mail voor vragen
+        </button>
       </div>
     </div>
   );

@@ -274,7 +274,7 @@ export default function RSVPForm() {
         </div>
         <h3 className="font-serif text-2xl md:text-3xl text-navy mb-4">Uitnodiging nodig</h3>
         <p className="text-dusty max-w-md mx-auto">
-          Gebruik de link uit je uitnodiging om je aan te melden voor ons trouwfeest.
+          Scan de QR-code op je uitnodiging om je aan te melden voor ons trouwfeest.
         </p>
       </div>
     );
