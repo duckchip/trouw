@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { User, Users, Check, X, MessageSquare, Send, Loader2, Clock, Plus, Trash2 } from 'lucide-react';
+import { User, Users, Check, X, MessageSquare, Send, Loader2, Clock, Plus, Trash2, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -590,7 +590,10 @@ export default function RSVPForm() {
             {/* Music Selection */}
             {(singleEvent || eventType) && (
               <div className="space-y-3 pt-4 border-t border-cream-dark">
-                <h3 className="font-serif text-xl text-navy">🎵 Muziekwensen</h3>
+                <label className="flex items-center gap-2 text-navy font-medium">
+                  <Music className="w-4 h-4" />
+                  Muziekwensen
+                </label>
                 <p className="text-dusty text-sm">
                   Kies tot 3 nummers die jullie graag willen horen op ons feest!
                 </p>
