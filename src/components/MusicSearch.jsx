@@ -2,18 +2,25 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, Music, X, Plus, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Using iTunes Search API - free, no API key needed!
+// iTunes Search API
 const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
+
+// Multiple CORS proxy options for fallback
+const CORS_PROXIES = [
+  '', // Try direct first
+  'https://corsproxy.io/?',
+  'https://api.allorigins.win/raw?url=',
+];
 
 export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchKey, setSearchKey] = useState(0); // Force re-render key
+  const [searchError, setSearchError] = useState(false);
+  const [searchKey, setSearchKey] = useState(0);
   const debounceRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
@@ -22,71 +29,91 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     };
   }, []);
 
-  // Search iTunes API
+  // Try fetching with multiple CORS proxies as fallback
+  const fetchWithFallback = async (url, proxyIndex = 0) => {
+    if (proxyIndex >= CORS_PROXIES.length) {
+      throw new Error('All proxies failed');
+    }
+
+    const proxy = CORS_PROXIES[proxyIndex];
+    const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+
+    try {
+      const response = await fetch(fetchUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const text = await response.text();
+      return JSON.parse(text);
+    } catch (error) {
+      console.log(`Proxy ${proxyIndex} failed, trying next...`, error.message);
+      return fetchWithFallback(url, proxyIndex + 1);
+    }
+  };
+
   const searchTracks = async (query) => {
     if (!query.trim()) {
       setSearchResults([]);
       setIsSearching(false);
+      setSearchError(false);
       return;
     }
 
     setIsSearching(true);
-    
+    setSearchError(false);
+
     try {
-      const response = await fetch(
-        `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-      
-      const data = await response.json();
-      
-      // Transform iTunes results to our format
+      const url = `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8&country=BE`;
+      const data = await fetchWithFallback(url);
+
       const tracks = (data.results || []).map((track, index) => ({
-        id: track.trackId?.toString() || `track-${index}`,
-        name: track.trackName || 'Unknown',
-        artist: track.artistName || 'Unknown Artist',
-        album: track.collectionName || 'Unknown Album',
+        id: track.trackId?.toString() || `track-${Date.now()}-${index}`,
+        name: track.trackName || 'Onbekend nummer',
+        artist: track.artistName || 'Onbekende artiest',
+        album: track.collectionName || '',
         albumArt: track.artworkUrl100?.replace('100x100', '300x300') || '',
       }));
-      
+
       setSearchResults(tracks);
+      setSearchError(false);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Search failed:', error);
       setSearchResults([]);
+      setSearchError(true);
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Handle input change with debounce
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
-    // Clear previous debounce
+    setSearchError(false);
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
-    
-    // Clear results immediately if empty
+
     if (!query.trim()) {
       setSearchResults([]);
       setIsSearching(false);
       return;
     }
-    
-    // Debounce the search
+
     setIsSearching(true);
     debounceRef.current = setTimeout(() => {
       searchTracks(query);
-    }, 500);
+    }, 600);
   };
 
-  // Focus search input and scroll into view
   const focusSearch = () => {
     if (searchInputRef.current) {
       searchInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -98,35 +125,30 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
 
   const addSong = (track) => {
     if (selectedSongs.length >= 3) return;
-    if (selectedSongs.some(s => s.id === track.id)) return;
-    
-    // Add the song
+    if (selectedSongs.some((s) => s.id === track.id)) return;
+
     onSongsChange([...selectedSongs, track]);
-    
-    // Reset search state completely
     setSearchQuery('');
     setSearchResults([]);
     setIsSearching(false);
-    
-    // Clear any pending debounce
+    setSearchError(false);
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
-    
-    // Force component key update for clean state
-    setSearchKey(prev => prev + 1);
+
+    setSearchKey((prev) => prev + 1);
   };
 
   const removeSong = (trackId) => {
-    onSongsChange(selectedSongs.filter(s => s.id !== trackId));
+    onSongsChange(selectedSongs.filter((s) => s.id !== trackId));
   };
 
   const canAddMore = selectedSongs.length < 3;
 
   return (
     <div className="space-y-4">
-      {/* Search Input */}
       {canAddMore && (
         <div className="relative" key={`search-${searchKey}`}>
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -134,8 +156,9 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
           </div>
           <input
             ref={searchInputRef}
-            type="search"
+            type="text"
             inputMode="search"
+            enterKeyHint="search"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -143,54 +166,80 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Zoek een nummer of artiest..."
-            className="w-full pl-12 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors text-base"
-            style={{ fontSize: '16px' }} // Prevents iOS zoom on focus
+            className="w-full pl-12 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors"
+            style={{ fontSize: '16px' }}
           />
-          
+
           {/* Search Results Dropdown */}
           {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-50 max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-50 max-h-80 overflow-y-auto -webkit-overflow-scrolling-touch">
               {searchResults.map((track) => {
-                const isSelected = selectedSongs.some(s => s.id === track.id);
+                const isSelected = selectedSongs.some((s) => s.id === track.id);
                 return (
-                  <button
-                    type="button"
+                  <div
                     key={track.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!isSelected) {
-                        addSong(track);
-                      }
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      if (!isSelected) addSong(track);
                     }}
-                    disabled={isSelected}
-                    className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
-                      isSelected 
-                        ? 'bg-cream-dark/50 opacity-50 cursor-not-allowed' 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !isSelected) addSong(track);
+                    }}
+                    className={`w-full flex items-center gap-3 p-3 text-left transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-cream-dark/50 opacity-50 cursor-not-allowed'
                         : 'hover:bg-cream-dark/30 active:bg-cream-dark/50'
                     }`}
                   >
-                    {track.albumArt && (
-                      <img 
-                        src={track.albumArt} 
-                        alt="" 
-                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                    {track.albumArt ? (
+                      <img
+                        src={track.albumArt}
+                        alt=""
+                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-cream-dark"
                         loading="lazy"
                       />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-cream-dark flex items-center justify-center flex-shrink-0">
+                        <Music className="w-6 h-6 text-dusty" />
+                      </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-navy truncate">{track.name}</p>
                       <p className="text-sm text-dusty truncate">{track.artist}</p>
                     </div>
-                    {!isSelected && (
-                      <Plus className="w-5 h-5 text-navy flex-shrink-0" />
-                    )}
-                  </button>
+                    {!isSelected && <Plus className="w-5 h-5 text-navy flex-shrink-0" />}
+                  </div>
                 );
               })}
             </div>
           )}
-          
+
+          {/* Error state */}
+          {searchError && !isSearching && searchQuery.trim() && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark p-4 z-50 text-center">
+              <p className="text-dusty text-sm">
+                Zoeken lukt niet. Typ je nummer handmatig hieronder:
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const manualTrack = {
+                    id: `manual-${Date.now()}`,
+                    name: searchQuery,
+                    artist: 'Handmatig toegevoegd',
+                    album: '',
+                    albumArt: '',
+                  };
+                  addSong(manualTrack);
+                }}
+                className="mt-2 text-navy underline text-sm"
+              >
+                "{searchQuery}" toevoegen
+              </button>
+            </div>
+          )}
+
           {isSearching && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2">
               <div className="w-5 h-5 border-2 border-navy/30 border-t-navy rounded-full animate-spin" />
@@ -205,12 +254,12 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
           <Disc3 className="w-4 h-4" />
           <span>Jouw Top 3 ({selectedSongs.length}/3)</span>
         </div>
-        
+
         <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <AnimatePresence mode="popLayout">
             {[0, 1, 2].map((slotIndex) => {
               const song = selectedSongs[slotIndex];
-              
+
               if (song) {
                 return (
                   <motion.div
@@ -229,21 +278,25 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                     >
                       <X className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
-                    
+
                     <div className="aspect-square relative">
-                      {song.albumArt && (
-                        <img 
-                          src={song.albumArt} 
+                      {song.albumArt ? (
+                        <img
+                          src={song.albumArt}
                           alt={`${song.album} album art`}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
+                      ) : (
+                        <div className="w-full h-full bg-cream-dark flex items-center justify-center">
+                          <Music className="w-8 h-8 text-dusty" />
+                        </div>
                       )}
                       <div className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 bg-navy/80 text-white text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-medium">
                         #{slotIndex + 1}
                       </div>
                     </div>
-                    
+
                     <div className="p-2 sm:p-3">
                       <p className="font-semibold text-navy truncate text-xs sm:text-sm">{song.name}</p>
                       <p className="text-dusty text-xs truncate">{song.artist}</p>
@@ -251,10 +304,9 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                   </motion.div>
                 );
               }
-              
+
               return (
-                <motion.button
-                  type="button"
+                <motion.div
                   key={`empty-${slotIndex}`}
                   layout
                   onClick={focusSearch}
@@ -264,13 +316,13 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                   <span className="text-xs sm:text-sm opacity-70 text-center px-1">
                     {slotIndex === 0 ? 'Zoek hierboven' : 'Kies nummer'}
                   </span>
-                </motion.button>
+                </motion.div>
               );
             })}
           </AnimatePresence>
         </div>
       </div>
-      
+
       <p className="text-xs sm:text-sm text-dusty text-center">
         Help ons de perfecte playlist samen te stellen!
       </p>
