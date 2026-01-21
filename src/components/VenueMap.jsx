@@ -10,13 +10,19 @@ export default function VenueMap() {
   const venueAddressEncoded = encodeURIComponent(venueAddress);
 
   // Bot-proof email - split into parts to prevent scraping
-  const emailParts = ['hannaentristan', 'gaantrouwen', '@', 'gmail', '.com'];
+  const emailUser = 'hannaentristan' + 'gaantrouwen';
+  const emailDomain = 'gmail' + '.' + 'com';
   
-  const handleEmailClick = (e) => {
-    e.preventDefault();
-    // Construct email only on click
-    const email = emailParts[0] + emailParts[1] + emailParts[2] + emailParts[3] + emailParts[4];
-    window.location.href = 'mailto:' + email;
+  const handleEmailClick = () => {
+    // Create a temporary anchor and click it - works better on mobile
+    const email = emailUser + '@' + emailDomain;
+    const link = document.createElement('a');
+    link.href = 'mailto:' + email;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
   
   return (
@@ -87,6 +93,7 @@ export default function VenueMap() {
         </a>
         
         <button
+          type="button"
           onClick={handleEmailClick}
           className="flex items-center justify-center gap-2 bg-white text-navy py-3 px-6 rounded-xl border border-navy hover:bg-navy/5 transition-colors font-medium cursor-pointer"
         >
