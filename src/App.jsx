@@ -130,9 +130,9 @@ function App() {
             />
             
             <h1 className="relative z-10 font-serif text-6xl md:text-8xl lg:text-9xl text-navy leading-tight">
-              Tristan
-              <span className="block text-3xl md:text-4xl lg:text-5xl text-dusty my-2 md:my-4">&</span>
               Hanna
+              <span className="block text-3xl md:text-4xl lg:text-5xl text-dusty my-2 md:my-4">&</span>
+              Tristan
             </h1>
           </motion.div>
 
@@ -268,7 +268,7 @@ function App() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Heart className="w-5 h-5 text-navy fill-navy/30" />
           </div>
-          <p className="font-serif text-2xl text-navy mb-2">Tristan & Hanna</p>
+          <p className="font-serif text-2xl text-navy mb-2">Hanna & Tristan</p>
           <p className="text-dusty text-sm">
             31 Juli 2026 • Hoboken, België
           </p>

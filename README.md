@@ -1,4 +1,4 @@
-# 💒 Tristan & Hanna's Wedding
+# 💒 Hanna & Tristan's Wedding
 
 A beautiful wedding invitation website built with React, Vite, and Tailwind CSS.
 

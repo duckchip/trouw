@@ -13,6 +13,15 @@
  * 9. Set "Who has access" to "Anyone"
  * 10. Click Deploy and copy the Web App URL
  * 11. Paste the URL into your React app's GOOGLE_SCRIPT_URL constant
+ * 
+ * EMAIL NOTIFICATIONS:
+ * - After deploying, you MUST authorize the script to send emails:
+ *   1. Run the testScript() function manually once (Run > Run function > testScript)
+ *   2. Click "Review Permissions" when prompted
+ *   3. Sign in with your Google account
+ *   4. Click "Advanced" > "Go to [script name] (unsafe)" 
+ *   5. Click "Allow" to grant email permissions
+ * - If you update the script, create a NEW deployment (not edit existing)
  */
 
 const SHEET_NAME = 'RSVPs';
@@ -58,6 +67,10 @@ function doPost(e) {
     const song2 = songs[1] || '';
     const song3 = songs[2] || '';
     
+    // Format timestamp in Belgian format (21/1/2026, 17:38:47)
+    const now = new Date();
+    const formattedDate = Utilities.formatDate(now, 'Europe/Brussels', 'd/M/yyyy, HH:mm:ss');
+    
     // Prepare the row data
     const rowData = [
       data.name || '',
@@ -67,7 +80,7 @@ function doPost(e) {
       song1,
       song2,
       song3,
-      data.submittedAt || new Date().toISOString()
+      formattedDate
     ];
     
     // Append the data to the sheet
@@ -169,9 +182,25 @@ function doGet(e) {
 }
 
 /**
- * Test function - run this to verify the script works
+ * Test function - run this to verify the script works AND authorize email permissions
+ * Select this function and click Run to trigger authorization
  */
 function testScript() {
+  // This will trigger the authorization popup for email permissions
+  MailApp.sendEmail({
+    to: NOTIFICATION_EMAIL,
+    subject: '✅ Test: Wedding RSVP Email Works!',
+    body: 'If you received this email, the notification system is working correctly!\n\nYou can now create a new deployment.'
+  });
+  
+  console.log('✅ Test email sent successfully to ' + NOTIFICATION_EMAIL);
+  console.log('Now create a NEW deployment: Deploy > New deployment');
+}
+
+/**
+ * Full test - saves a test RSVP and sends notification
+ */
+function testFullRSVP() {
   const testData = {
     postData: {
       contents: JSON.stringify({
