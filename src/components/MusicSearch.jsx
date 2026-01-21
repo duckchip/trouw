@@ -113,6 +113,7 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                   const isSelected = selectedSongs.some(s => s.id === track.id);
                   return (
                     <button
+                      type="button"
                       key={track.id}
                       onClick={() => !isSelected && addSong(track)}
                       disabled={isSelected}
@@ -173,6 +174,7 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                     className="relative bg-white rounded-xl shadow-md overflow-hidden border border-cream-dark"
                   >
                     <button
+                      type="button"
                       onClick={() => removeSong(song.id)}
                       className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 bg-white/90 hover:bg-red-50 text-dusty hover:text-red-500 rounded-full p-1 transition-colors shadow-sm"
                       aria-label="Verwijder nummer"
@@ -202,6 +204,7 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
               // Empty slot - clickable to focus search
               return (
                 <motion.button
+                  type="button"
                   key={`empty-${slotIndex}`}
                   layout
                   onClick={focusSearch}

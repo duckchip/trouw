@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { User, Check, X, MessageSquare, Send, Loader2, Clock } from 'lucide-react';
+import { User, Users, Check, X, MessageSquare, Send, Loader2, Clock, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -17,30 +17,24 @@ const allEventOptions = [
 
 // Obfuscated invite codes - change these to your own random strings!
 const INVITE_CODES = {
-  'r7x2k': 'reception',   // Reception only (17:00)
-  'd9m4p': 'dinner',      // Reception + Dinner (17:00 + 19:00)
-  'p5n1q': 'partyonly',   // Party only (21:00)
-  'f3h8w': 'full',        // Full event (17:00 + 19:00 + 21:00)
+  'r7x2k': 'reception',
+  'd9m4p': 'dinner',
+  'p5n1q': 'partyonly',
+  'f3h8w': 'full',
 };
 
-// Get invite level from URL parameter
 function getInviteLevel() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('u');
-  
   if (code && INVITE_CODES[code]) {
     return INVITE_CODES[code];
   }
-  
-  return null; // No valid code = no access
+  return null;
 }
 
-// Celebration confetti effect
 function launchCelebration() {
   const duration = 3000;
   const end = Date.now() + duration;
-
-  // Wedding colors: gold, white, light blue
   const colors = ['#d4af37', '#ffffff', '#93c5fd', '#fef3c7'];
 
   const frame = () => {
@@ -49,33 +43,29 @@ function launchCelebration() {
       angle: 60,
       spread: 55,
       origin: { x: 0, y: 0.7 },
-      colors: colors,
+      colors,
     });
     confetti({
       particleCount: 3,
       angle: 120,
       spread: 55,
       origin: { x: 1, y: 0.7 },
-      colors: colors,
+      colors,
     });
-
     if (Date.now() < end) {
       requestAnimationFrame(frame);
     }
   };
 
-  // Initial burst
   confetti({
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 },
-    colors: colors,
+    colors,
   });
-
   frame();
 }
 
-// Flying dove component
 function FlyingDoves() {
   const doves = [
     { delay: 0, startX: -50, startY: 300 },
@@ -89,16 +79,12 @@ function FlyingDoves() {
         <motion.div
           key={i}
           initial={{ x: dove.startX, y: dove.startY, opacity: 0 }}
-          animate={{ 
-            x: [dove.startX, 150, 400], 
+          animate={{
+            x: [dove.startX, 150, 400],
             y: [dove.startY, dove.startY - 150, dove.startY - 100],
             opacity: [0, 1, 0],
           }}
-          transition={{ 
-            duration: 2.5, 
-            delay: dove.delay,
-            ease: "easeOut",
-          }}
+          transition={{ duration: 2.5, delay: dove.delay, ease: 'easeOut' }}
           className="absolute text-4xl"
         >
           🕊️
@@ -109,30 +95,25 @@ function FlyingDoves() {
 }
 
 export default function RSVPForm() {
-  const [formData, setFormData] = useState({
-    guestName: '',
-    attendance: null,
-    eventType: '',
-    dietaryRestrictions: '',
-  });
+  const [guests, setGuests] = useState([{ name: '', dietary: '' }]);
+  const [attendance, setAttendance] = useState(null);
+  const [eventType, setEventType] = useState('');
   const [selectedSongs, setSelectedSongs] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Determine which events to show based on invite level
   const inviteLevel = useMemo(() => getInviteLevel(), []);
-  
+
   const availableEvents = useMemo(() => {
     if (!inviteLevel) return [];
-    
     switch (inviteLevel) {
       case 'reception':
-        return allEventOptions.filter(e => e.id === 'reception');
+        return allEventOptions.filter((e) => e.id === 'reception');
       case 'dinner':
-        return allEventOptions.filter(e => e.id === 'reception' || e.id === 'dinner');
+        return allEventOptions.filter((e) => e.id === 'reception' || e.id === 'dinner');
       case 'partyonly':
-        return allEventOptions.filter(e => e.id === 'party');
+        return allEventOptions.filter((e) => e.id === 'party');
       case 'full':
         return allEventOptions;
       default:
@@ -140,69 +121,92 @@ export default function RSVPForm() {
     }
   }, [inviteLevel]);
 
-  // If only one option, auto-select it
   const singleEvent = availableEvents.length === 1;
 
-  // Check if dietary should be shown - MUST be before any early returns
   const showDietary = useMemo(() => {
     if (inviteLevel === 'partyonly') return false;
     if (singleEvent && availableEvents.length > 0) {
       return availableEvents[0]?.id === 'reception' || availableEvents[0]?.id === 'dinner';
     }
-    return formData.eventType === 'reception' || formData.eventType === 'dinner';
-  }, [inviteLevel, singleEvent, availableEvents, formData.eventType]);
+    return eventType === 'reception' || eventType === 'dinner';
+  }, [inviteLevel, singleEvent, availableEvents, eventType]);
 
-  // Launch celebration when submitted successfully (for attending guests)
   useEffect(() => {
-    if (isSubmitted && formData.attendance) {
+    if (isSubmitted && attendance) {
       setShowCelebration(true);
       launchCelebration();
     }
-  }, [isSubmitted, formData.attendance]);
+  }, [isSubmitted, attendance]);
+
+  const addGuest = () => {
+    if (guests.length < 6) {
+      setGuests([...guests, { name: '', dietary: '' }]);
+    }
+  };
+
+  const removeGuest = (index) => {
+    if (guests.length > 1) {
+      setGuests(guests.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateGuest = (index, field, value) => {
+    const updated = [...guests];
+    updated[index] = { ...updated[index], [field]: value };
+    setGuests(updated);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.guestName.trim()) {
-      toast.error('Vul alsjeblieft je naam in');
-      return;
-    }
-    
-    if (formData.attendance === null) {
-      toast.error('Laat ons weten of je erbij bent');
+
+    const filledGuests = guests.filter((g) => g.name.trim());
+    if (filledGuests.length === 0) {
+      toast.error('Vul alsjeblieft minstens één naam in');
       return;
     }
 
-    const selectedEventId = singleEvent ? availableEvents[0]?.id : formData.eventType;
+    if (attendance === null) {
+      toast.error('Laat ons weten of jullie erbij zijn');
+      return;
+    }
 
-    if (formData.attendance && !selectedEventId) {
-      toast.error('Selecteer vanaf welk moment je erbij bent');
+    const selectedEventId = singleEvent ? availableEvents[0]?.id : eventType;
+    if (attendance && !selectedEventId) {
+      toast.error('Selecteer vanaf welk moment jullie erbij zijn');
       return;
     }
 
     setIsSubmitting(true);
 
-    const selectedEvent = allEventOptions.find(e => e.id === selectedEventId);
-    
-    const submissionData = {
-      name: formData.guestName,
-      attendance: formData.attendance ? 'Ja' : 'Nee',
-      eventType: selectedEvent ? `${selectedEvent.label} (${selectedEvent.time})` : 'N.v.t.',
-      dietary: formData.dietaryRestrictions || 'Geen',
-      songs: selectedSongs.map(s => `${s.name} - ${s.artist}`),
-      submittedAt: new Date().toISOString(),
-    };
+    const selectedEvent = allEventOptions.find((e) => e.id === selectedEventId);
+    const eventLabel = selectedEvent ? `${selectedEvent.label} (${selectedEvent.time})` : 'N.v.t.';
 
     try {
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submissionData),
-      });
+      // Submit each guest separately to Google Sheets
+      for (const guest of filledGuests) {
+        const submissionData = {
+          name: guest.name,
+          attendance: attendance ? 'Ja' : 'Nee',
+          eventType: eventLabel,
+          dietary: guest.dietary || 'Geen',
+          songs: selectedSongs.map((s) => `${s.name} - ${s.artist}`),
+          submittedAt: new Date().toISOString(),
+        };
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(submissionData),
+        });
+      }
 
       setIsSubmitted(true);
-      toast.success('Bedankt voor je reactie!');
+      toast.success(
+        filledGuests.length > 1
+          ? `Bedankt! ${filledGuests.length} gasten geregistreerd.`
+          : 'Bedankt voor je reactie!'
+      );
     } catch (error) {
       console.error('Submission error:', error);
       toast.error('Er ging iets mis. Probeer het opnieuw.');
@@ -211,16 +215,13 @@ export default function RSVPForm() {
     }
   };
 
-  // No valid invite code
   if (!inviteLevel) {
     return (
       <div className="text-center py-12 px-8">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-navy/10 rounded-full mb-6">
           <span className="text-4xl">💌</span>
         </div>
-        <h3 className="font-serif text-2xl md:text-3xl text-navy mb-4">
-          Uitnodiging nodig
-        </h3>
+        <h3 className="font-serif text-2xl md:text-3xl text-navy mb-4">Uitnodiging nodig</h3>
         <p className="text-dusty max-w-md mx-auto">
           Gebruik de link uit je uitnodiging om je aan te melden voor ons trouwfeest.
         </p>
@@ -228,8 +229,8 @@ export default function RSVPForm() {
     );
   }
 
-  // Success State with celebration
   if (isSubmitted) {
+    const guestCount = guests.filter((g) => g.name.trim()).length;
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -237,15 +238,15 @@ export default function RSVPForm() {
         className="text-center py-16 px-8 relative"
       >
         {showCelebration && <FlyingDoves />}
-        
+
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
           className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-gold/20 to-navy/10 rounded-full mb-6 relative"
         >
-          <span className="text-5xl">{formData.attendance ? '🎉' : '💝'}</span>
-          {formData.attendance && (
+          <span className="text-5xl">{attendance ? '🎉' : '💝'}</span>
+          {attendance && (
             <>
               <motion.span
                 initial={{ opacity: 0, scale: 0 }}
@@ -266,28 +267,30 @@ export default function RSVPForm() {
             </>
           )}
         </motion.div>
-        
+
         <motion.h3
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="font-serif text-3xl md:text-4xl text-navy mb-4"
         >
-          {formData.attendance ? 'Tot dan!' : 'Jammer!'}
+          {attendance ? 'Tot dan!' : 'Jammer!'}
         </motion.h3>
-        
+
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="text-dusty text-lg max-w-md mx-auto"
         >
-          {formData.attendance 
-            ? 'We kijken ernaar uit om je te zien op onze speciale dag!'
-            : 'We zullen je missen, maar we begrijpen het. We houden je op de hoogte!'}
+          {attendance
+            ? guestCount > 1
+              ? `We kijken ernaar uit om jullie ${guestCount} te zien op onze speciale dag!`
+              : 'We kijken ernaar uit om je te zien op onze speciale dag!'
+            : 'We zullen jullie missen, maar we begrijpen het. We houden jullie op de hoogte!'}
         </motion.p>
 
-        {formData.attendance && (
+        {attendance && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -306,7 +309,7 @@ export default function RSVPForm() {
             ))}
           </motion.div>
         )}
-        
+
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -314,12 +317,14 @@ export default function RSVPForm() {
           onClick={() => {
             setIsSubmitted(false);
             setShowCelebration(false);
-            setFormData({ guestName: '', attendance: null, eventType: '', dietaryRestrictions: '' });
+            setGuests([{ name: '', dietary: '' }]);
+            setAttendance(null);
+            setEventType('');
             setSelectedSongs([]);
           }}
           className="mt-8 text-dusty hover:text-navy underline underline-offset-4 transition-colors"
         >
-          Nog iemand aanmelden?
+          Nog meer gasten aanmelden?
         </motion.button>
       </motion.div>
     );
@@ -327,45 +332,89 @@ export default function RSVPForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Guest Name */}
-      <div className="space-y-2">
-        <label htmlFor="guestName" className="flex items-center gap-2 text-navy font-medium">
-          <User className="w-4 h-4" />
-          Naam
+      {/* Guest Names */}
+      <div className="space-y-4">
+        <label className="flex items-center gap-2 text-navy font-medium">
+          <Users className="w-4 h-4" />
+          Wie komt er?
         </label>
-        <input
-          type="text"
-          id="guestName"
-          value={formData.guestName}
-          onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-          placeholder="Je volledige naam"
-          className="w-full px-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors"
-          required
-        />
+        <p className="text-sm text-dusty -mt-2">
+          Vul de volledige namen in (voor- en achternaam)
+        </p>
+
+        <div className="space-y-3">
+          {guests.map((guest, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex gap-2"
+            >
+              <div className="flex-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="w-4 h-4 text-dusty" />
+                </div>
+                <input
+                  type="text"
+                  value={guest.name}
+                  onChange={(e) => updateGuest(index, 'name', e.target.value)}
+                  placeholder={index === 0 ? 'Voornaam + Achternaam' : `Gast ${index + 1} - Voornaam + Achternaam`}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors"
+                />
+              </div>
+              {guests.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeGuest(index)}
+                  className="px-3 py-3 text-dusty hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                  aria-label="Verwijder gast"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {guests.length < 6 && (
+          <button
+            type="button"
+            onClick={addGuest}
+            className="flex items-center gap-2 text-navy hover:text-navy-dark font-medium text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Nog iemand toevoegen
+          </button>
+        )}
       </div>
 
       {/* Attendance */}
       <div className="space-y-3">
-        <label className="text-navy font-medium">Ben je erbij?</label>
+        <label className="text-navy font-medium">
+          {guests.length > 1 ? 'Zijn jullie erbij?' : 'Ben je erbij?'}
+        </label>
         <div className="flex gap-4">
           <button
             type="button"
-            onClick={() => setFormData({ ...formData, attendance: true })}
+            onClick={() => setAttendance(true)}
             className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl border-2 transition-all ${
-              formData.attendance === true
+              attendance === true
                 ? 'bg-navy text-white border-navy shadow-lg'
                 : 'bg-white text-navy border-cream-dark hover:border-navy/30'
             }`}
           >
             <Check className="w-5 h-5" />
-            <span className="font-medium">Ja, ik kom!</span>
+            <span className="font-medium">{guests.length > 1 ? 'Ja, wij komen!' : 'Ja, ik kom!'}</span>
           </button>
-          
+
           <button
             type="button"
-            onClick={() => setFormData({ ...formData, attendance: false, eventType: '' })}
+            onClick={() => {
+              setAttendance(false);
+              setEventType('');
+            }}
             className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl border-2 transition-all ${
-              formData.attendance === false
+              attendance === false
                 ? 'bg-dusty text-white border-dusty shadow-lg'
                 : 'bg-white text-dusty border-cream-dark hover:border-dusty/30'
             }`}
@@ -376,37 +425,40 @@ export default function RSVPForm() {
         </div>
       </div>
 
-      {/* Conditional sections for attending guests */}
       <AnimatePresence>
-        {formData.attendance === true && (
+        {attendance === true && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="space-y-8 overflow-hidden"
           >
-            {/* Event Type Selection - only show if multiple options */}
+            {/* Event Type Selection */}
             {!singleEvent && (
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-navy font-medium">
                   <Clock className="w-4 h-4" />
-                  Vanaf welk moment ben je erbij?
+                  {guests.length > 1 ? 'Vanaf welk moment zijn jullie erbij?' : 'Vanaf welk moment ben je erbij?'}
                 </label>
-                <div className={`grid grid-cols-1 gap-3 ${availableEvents.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
+                <div
+                  className={`grid grid-cols-1 gap-3 ${
+                    availableEvents.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'
+                  }`}
+                >
                   {availableEvents.map((event) => (
                     <button
                       key={event.id}
                       type="button"
-                      onClick={() => setFormData({ ...formData, eventType: event.id })}
+                      onClick={() => setEventType(event.id)}
                       className={`flex flex-col items-center gap-2 py-4 px-4 rounded-xl border-2 transition-all ${
-                        formData.eventType === event.id
+                        eventType === event.id
                           ? 'bg-navy text-white border-navy shadow-lg'
                           : 'bg-white text-navy border-cream-dark hover:border-navy/30'
                       }`}
                     >
                       <span className="text-2xl">{event.icon}</span>
                       <span className="font-medium">{event.label}</span>
-                      <span className={`text-sm ${formData.eventType === event.id ? 'text-white/80' : 'text-dusty'}`}>
+                      <span className={`text-sm ${eventType === event.id ? 'text-white/80' : 'text-dusty'}`}>
                         {event.time}
                       </span>
                     </button>
@@ -415,7 +467,6 @@ export default function RSVPForm() {
               </div>
             )}
 
-            {/* Single event confirmation message */}
             {singleEvent && availableEvents.length > 0 && (
               <div className="bg-cream-dark/50 rounded-xl p-4 text-center">
                 <span className="text-2xl">{availableEvents[0].icon}</span>
@@ -425,39 +476,46 @@ export default function RSVPForm() {
               </div>
             )}
 
-            {/* Dietary Restrictions */}
-            {(singleEvent || formData.eventType) && showDietary && (
-              <motion.div 
+            {/* Dietary Restrictions per guest */}
+            {(singleEvent || eventType) && showDietary && (
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="space-y-2"
+                className="space-y-4"
               >
-                <label htmlFor="dietary" className="flex items-center gap-2 text-navy font-medium">
+                <label className="flex items-center gap-2 text-navy font-medium">
                   <MessageSquare className="w-4 h-4" />
                   Dieetwensen of allergieën
                 </label>
-                <textarea
-                  id="dietary"
-                  value={formData.dietaryRestrictions}
-                  onChange={(e) => setFormData({ ...formData, dietaryRestrictions: e.target.value })}
-                  placeholder="Laat ons weten als je speciale dieetwensen hebt..."
-                  rows={3}
-                  className="w-full px-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors resize-none"
-                />
+                {guests.map(
+                  (guest, index) =>
+                    guest.name.trim() && (
+                      <div key={index} className="space-y-1">
+                        <label className="text-sm text-dusty">{guest.name}</label>
+                        <textarea
+                          value={guest.dietary}
+                          onChange={(e) => updateGuest(index, 'dietary', e.target.value)}
+                          placeholder="Geen bijzonderheden"
+                          rows={2}
+                          className="w-full px-4 py-2 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors resize-none text-sm"
+                        />
+                      </div>
+                    )
+                )}
+                {!guests.some((g) => g.name.trim()) && (
+                  <p className="text-sm text-dusty italic">Vul eerst de namen in hierboven</p>
+                )}
               </motion.div>
             )}
 
             {/* Music Selection */}
-            {(singleEvent || formData.eventType) && (
+            {(singleEvent || eventType) && (
               <div className="space-y-3 pt-4 border-t border-cream-dark">
                 <h3 className="font-serif text-xl text-navy">🎵 Muziekwensen</h3>
                 <p className="text-dusty text-sm">
-                  Kies tot 3 nummers die je graag wilt horen op ons feest!
+                  Kies tot 3 nummers die jullie graag willen horen op ons feest!
                 </p>
-                <MusicSearch 
-                  selectedSongs={selectedSongs}
-                  onSongsChange={setSelectedSongs}
-                />
+                <MusicSearch selectedSongs={selectedSongs} onSongsChange={setSelectedSongs} />
               </div>
             )}
           </motion.div>
@@ -467,7 +525,7 @@ export default function RSVPForm() {
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={isSubmitting || formData.attendance === null}
+        disabled={isSubmitting || attendance === null}
         className="w-full flex items-center justify-center gap-2 bg-navy text-white py-4 px-8 rounded-xl font-medium text-lg hover:bg-navy-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
       >
         {isSubmitting ? (
