@@ -16,6 +16,7 @@
  */
 
 const SHEET_NAME = 'RSVPs';
+const NOTIFICATION_EMAIL = 'hannaentristangaantrouwen@gmail.com';
 
 /**
  * Handle POST requests from the wedding website
@@ -75,6 +76,9 @@ function doPost(e) {
     // Auto-resize columns for better visibility
     sheet.autoResizeColumns(1, 8);
     
+    // Send email notification
+    sendNotificationEmail(data);
+    
     // Return success response
     return ContentService
       .createTextOutput(JSON.stringify({
@@ -95,6 +99,52 @@ function doPost(e) {
         message: 'Error saving RSVP: ' + error.toString()
       }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Send email notification for new RSVP
+ */
+function sendNotificationEmail(data) {
+  try {
+    const isAttending = data.attendance === 'Ja';
+    const emoji = isAttending ? '🎉' : '😢';
+    const status = isAttending ? 'komt naar het feest!' : 'kan helaas niet komen';
+    
+    const subject = `${emoji} RSVP: ${data.name} ${status}`;
+    
+    let body = `Nieuwe RSVP ontvangen!\n\n`;
+    body += `👤 Naam: ${data.name}\n`;
+    body += `✅ Aanwezig: ${data.attendance}\n`;
+    
+    if (data.eventType && data.eventType !== 'N.v.t.') {
+      body += `🕐 Moment: ${data.eventType}\n`;
+    }
+    
+    if (data.dietary) {
+      body += `🍽️ Dieetwensen: ${data.dietary}\n`;
+    }
+    
+    const songs = data.songs || [];
+    if (songs.length > 0 && songs.some(s => s)) {
+      body += `\n🎵 Muziekwensen:\n`;
+      songs.forEach((song, i) => {
+        if (song) body += `   ${i + 1}. ${song}\n`;
+      });
+    }
+    
+    body += `\n📅 Ingediend: ${new Date().toLocaleString('nl-BE')}\n`;
+    body += `\n---\nBekijk alle RSVPs in de Google Sheet.`;
+    
+    MailApp.sendEmail({
+      to: NOTIFICATION_EMAIL,
+      subject: subject,
+      body: body
+    });
+    
+  } catch (error) {
+    console.error('Error sending notification email:', error);
+    // Don't throw - we don't want email failure to break the RSVP
   }
 }
 
