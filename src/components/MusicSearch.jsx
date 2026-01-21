@@ -108,10 +108,11 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
 
   const focusSearch = () => {
     if (searchInputRef.current) {
-      searchInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Use 'nearest' to avoid aggressive scrolling on mobile
+      searchInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       setTimeout(() => {
         searchInputRef.current?.focus();
-      }, 300);
+      }, 100);
     }
   };
 

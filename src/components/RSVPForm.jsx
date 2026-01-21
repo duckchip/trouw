@@ -216,13 +216,13 @@ export default function RSVPForm() {
   const singleEvent = availableEvents.length === 1;
 
   const showDietary = useMemo(() => {
-    // Party-only and ceremony-only guests don't need dietary
-    if (inviteLevel === 'partyonly' || inviteLevel === 'ceremony') return false;
+    // Party-only guests don't need dietary (no food served)
+    if (inviteLevel === 'partyonly') return false;
     if (singleEvent && availableEvents.length > 0) {
       const eventId = availableEvents[0]?.id;
-      return eventId === 'reception' || eventId === 'dinner';
+      return eventId === 'ceremony' || eventId === 'reception' || eventId === 'dinner';
     }
-    return eventType === 'reception' || eventType === 'dinner';
+    return eventType === 'ceremony' || eventType === 'reception' || eventType === 'dinner';
   }, [inviteLevel, singleEvent, availableEvents, eventType]);
 
   useEffect(() => {
@@ -542,7 +542,8 @@ export default function RSVPForm() {
                   value={guest.name}
                   onChange={(e) => updateGuest(index, 'name', e.target.value)}
                   placeholder={index === 0 ? 'Voornaam + Achternaam' : `Gast ${index + 1} - Voornaam + Achternaam`}
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors text-base"
+                  autoComplete="off"
                 />
               </div>
               {guests.length > 1 && (
@@ -680,7 +681,7 @@ export default function RSVPForm() {
                           onChange={(e) => updateGuest(index, 'dietary', e.target.value)}
                           placeholder="Geen bijzonderheden"
                           rows={2}
-                          className="w-full px-4 py-2 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors resize-none text-sm"
+                          className="w-full px-4 py-3 bg-white border border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition-colors resize-none text-base"
                         />
                       </div>
                     )
