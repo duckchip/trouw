@@ -2,15 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, Music, X, Plus, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// iTunes Search API
-const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
+// Deezer API - doesn't trigger iOS Music app redirect like iTunes does
+const DEEZER_SEARCH_URL = 'https://api.deezer.com/search';
 
-// Multiple CORS proxy options for fallback
-const CORS_PROXIES = [
-  '', // Try direct first
-  'https://corsproxy.io/?',
-  'https://api.allorigins.win/raw?url=',
-];
+// CORS proxy for production (Deezer needs proxy from browsers)
+const CORS_PROXY = 'https://corsproxy.io/?';
 
 export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,27 +25,16 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     };
   }, []);
 
-  // Try all proxies in parallel for speed
-  const fetchWithFallback = async (url) => {
-    const fetchPromises = CORS_PROXIES.map(async (proxy, index) => {
-      const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
-      try {
-        const response = await fetch(fetchUrl, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const text = await response.text();
-        const data = JSON.parse(text);
-        if (data.results) return data; // Valid iTunes response
-        throw new Error('Invalid response');
-      } catch (error) {
-        throw error; // Let Promise.any handle it
-      }
+  // Fetch with CORS proxy
+  const fetchWithProxy = async (url) => {
+    const fetchUrl = `${CORS_PROXY}${encodeURIComponent(url)}`;
+    const response = await fetch(fetchUrl, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
     });
-
-    // Return first successful response
-    return Promise.any(fetchPromises);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data;
   };
 
   // Track current search to prevent race conditions
@@ -69,18 +54,20 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     setSearchError(false);
 
     try {
-      const url = `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8&country=BE`;
-      const data = await fetchWithFallback(url);
+      // Deezer API endpoint
+      const url = `${DEEZER_SEARCH_URL}?q=${encodeURIComponent(query)}&limit=8`;
+      const data = await fetchWithProxy(url);
 
       // Only update if this is still the current search
       if (searchId !== currentSearchRef.current) return;
 
-      const tracks = (data.results || []).map((track, index) => ({
-        id: track.trackId?.toString() || `track-${Date.now()}-${index}`,
-        name: track.trackName || 'Onbekend nummer',
-        artist: track.artistName || 'Onbekende artiest',
-        album: track.collectionName || '',
-        albumArt: track.artworkUrl100?.replace('100x100', '300x300') || '',
+      // Deezer returns data in a different format than iTunes
+      const tracks = (data.data || []).map((track, index) => ({
+        id: track.id?.toString() || `track-${Date.now()}-${index}`,
+        name: track.title || 'Onbekend nummer',
+        artist: track.artist?.name || 'Onbekende artiest',
+        album: track.album?.title || '',
+        albumArt: track.album?.cover_medium || track.album?.cover || '',
       }));
 
       setSearchResults(tracks);
