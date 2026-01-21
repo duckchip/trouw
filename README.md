@@ -1,16 +1,46 @@
-# React + Vite
+# 💒 Tristan & Hanna's Wedding
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A beautiful wedding invitation website built with React, Vite, and Tailwind CSS.
 
-Currently, two official plugins are available:
+**Live site:** [duckchip.github.io/trouw](https://duckchip.github.io/trouw/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+- 🎠 **Infinite Photo Gallery** - Auto-scrolling image carousel with Framer Motion
+- 📝 **RSVP Form** - Guest registration with dietary preferences
+- 🎵 **Music Requests** - Let guests suggest their favorite songs
+- 🗺️ **Venue Map** - Interactive Google Maps integration
+- 📱 **Fully Responsive** - Beautiful on all devices
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+- [React](https://react.dev/) + [Vite](https://vite.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Framer Motion](https://www.framer.com/motion/)
+- [Lucide Icons](https://lucide.dev/)
+- [React Hot Toast](https://react-hot-toast.com/)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+## 📋 Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+## 📄 License
+
+Made with ♥ for our special day.
