@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Search, Music, X, Plus, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,6 +11,19 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const [isSearching, setIsSearching] = useState(false);
   const debounceRef = useRef(null);
   const searchInputRef = useRef(null);
+  const abortControllerRef = useRef(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Search iTunes API
   const searchTracks = useCallback(async (query) => {
@@ -19,27 +32,36 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
       return;
     }
 
+    // Abort any previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setIsSearching(true);
     
     try {
       const response = await fetch(
-        `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`
+        `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`,
+        { signal: abortControllerRef.current.signal }
       );
       const data = await response.json();
       
       // Transform iTunes results to our format
-      const tracks = data.results.map(track => ({
-        id: track.trackId.toString(),
-        name: track.trackName,
-        artist: track.artistName,
-        album: track.collectionName,
-        albumArt: track.artworkUrl100.replace('100x100', '300x300'),
+      const tracks = (data.results || []).map(track => ({
+        id: track.trackId?.toString() || Math.random().toString(),
+        name: track.trackName || 'Unknown',
+        artist: track.artistName || 'Unknown Artist',
+        album: track.collectionName || 'Unknown Album',
+        albumArt: track.artworkUrl100?.replace('100x100', '300x300') || '',
       }));
       
       setSearchResults(tracks);
     } catch (error) {
-      console.error('Search error:', error);
-      setSearchResults([]);
+      if (error.name !== 'AbortError') {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      }
     } finally {
       setIsSearching(false);
     }
@@ -54,9 +76,14 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
       clearTimeout(debounceRef.current);
     }
     
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    
     debounceRef.current = setTimeout(() => {
       searchTracks(query);
-    }, 300);
+    }, 400);
   };
 
   // Focus search input and scroll into view
@@ -75,6 +102,13 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     onSongsChange([...selectedSongs, track]);
     setSearchQuery('');
     setSearchResults([]);
+    
+    // Refocus input after a short delay for next search
+    if (selectedSongs.length < 2) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
   };
 
   const removeSong = (trackId) => {
