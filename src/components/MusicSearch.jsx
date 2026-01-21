@@ -29,36 +29,35 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     };
   }, []);
 
-  // Try fetching with multiple CORS proxies as fallback
-  const fetchWithFallback = async (url, proxyIndex = 0) => {
-    if (proxyIndex >= CORS_PROXIES.length) {
-      throw new Error('All proxies failed');
-    }
-
-    const proxy = CORS_PROXIES[proxyIndex];
-    const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
-
-    try {
-      const response = await fetch(fetchUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+  // Try all proxies in parallel for speed
+  const fetchWithFallback = async (url) => {
+    const fetchPromises = CORS_PROXIES.map(async (proxy, index) => {
+      const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+      try {
+        const response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
+        const data = JSON.parse(text);
+        if (data.results) return data; // Valid iTunes response
+        throw new Error('Invalid response');
+      } catch (error) {
+        throw error; // Let Promise.any handle it
       }
+    });
 
-      const text = await response.text();
-      return JSON.parse(text);
-    } catch (error) {
-      console.log(`Proxy ${proxyIndex} failed, trying next...`, error.message);
-      return fetchWithFallback(url, proxyIndex + 1);
-    }
+    // Return first successful response
+    return Promise.any(fetchPromises);
   };
 
+  // Track current search to prevent race conditions
+  const currentSearchRef = useRef(0);
+
   const searchTracks = async (query) => {
+    const searchId = ++currentSearchRef.current;
+    
     if (!query.trim()) {
       setSearchResults([]);
       setIsSearching(false);
@@ -73,6 +72,9 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
       const url = `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8&country=BE`;
       const data = await fetchWithFallback(url);
 
+      // Only update if this is still the current search
+      if (searchId !== currentSearchRef.current) return;
+
       const tracks = (data.results || []).map((track, index) => ({
         id: track.trackId?.toString() || `track-${Date.now()}-${index}`,
         name: track.trackName || 'Onbekend nummer',
@@ -83,11 +85,14 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
 
       setSearchResults(tracks);
       setSearchError(false);
+      setIsSearching(false);
     } catch (error) {
+      // Only show error if this is still the current search
+      if (searchId !== currentSearchRef.current) return;
+      
       console.error('Search failed:', error);
       setSearchResults([]);
       setSearchError(true);
-    } finally {
       setIsSearching(false);
     }
   };
