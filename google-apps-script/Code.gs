@@ -33,9 +33,10 @@ function doPost(e) {
     if (!sheet) {
       sheet = spreadsheet.insertSheet(SHEET_NAME);
       // Add headers
-      sheet.getRange(1, 1, 1, 7).setValues([[
+      sheet.getRange(1, 1, 1, 8).setValues([[
         'Name',
         'Attendance',
+        'Event Type',
         'Dietary Restrictions',
         'Song 1',
         'Song 2',
@@ -43,7 +44,7 @@ function doPost(e) {
         'Submitted At'
       ]]);
       // Style the header row
-      sheet.getRange(1, 1, 1, 7)
+      sheet.getRange(1, 1, 1, 8)
         .setFontWeight('bold')
         .setBackground('#1e3a8a')
         .setFontColor('#ffffff');
@@ -60,6 +61,7 @@ function doPost(e) {
     const rowData = [
       data.name || '',
       data.attendance || '',
+      data.eventType || 'N.v.t.',
       data.dietary || '',
       song1,
       song2,
@@ -71,7 +73,7 @@ function doPost(e) {
     sheet.appendRow(rowData);
     
     // Auto-resize columns for better visibility
-    sheet.autoResizeColumns(1, 7);
+    sheet.autoResizeColumns(1, 8);
     
     // Return success response
     return ContentService
@@ -107,6 +109,7 @@ function doGet(e) {
       expectedFormat: {
         name: 'Guest Name',
         attendance: 'Ja/Nee',
+        eventType: 'Receptie (17:00) / Diner (19:00) / Feest (21:00)',
         dietary: 'Dietary restrictions',
         songs: ['Song 1 - Artist 1', 'Song 2 - Artist 2', 'Song 3 - Artist 3'],
         submittedAt: 'ISO date string'
@@ -124,6 +127,7 @@ function testScript() {
       contents: JSON.stringify({
         name: 'Test Guest',
         attendance: 'Ja',
+        eventType: 'Diner (19:00)',
         dietary: 'Vegetarian',
         songs: ['Perfect - Ed Sheeran', 'All of Me - John Legend'],
         submittedAt: new Date().toISOString()

@@ -37,9 +37,9 @@ export default function VenueMap() {
             <div>
               <h4 className="font-semibold text-navy mb-1">Tijden</h4>
               <p className="text-dusty text-sm">
-                Ceremonie: 14:00<br />
-                Receptie: 15:00<br />
-                Diner: 18:00
+                Receptie: 17:00<br />
+                Diner: 19:00<br />
+                Feest: 21:00
               </p>
             </div>
           </div>
