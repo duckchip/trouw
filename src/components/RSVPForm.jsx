@@ -279,6 +279,10 @@ export default function RSVPForm() {
     // Check if it's a valid code
     if (INVITE_CODES[code]) {
       setInviteLevel(INVITE_CODES[code]);
+      // Scroll to top of RSVP section
+      setTimeout(() => {
+        document.getElementById('rsvp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } else {
       setCodeError('Ongeldige code. Controleer je uitnodiging.');
     }
@@ -424,7 +428,13 @@ export default function RSVPForm() {
   const inviteInfo = INVITE_DESCRIPTIONS[inviteLevel];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <motion.form 
+      onSubmit={handleSubmit} 
+      className="space-y-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+    >
       {/* Invite Info Banner */}
       {inviteInfo && (
         <div className="bg-gradient-to-r from-navy/5 to-gold/10 rounded-xl p-5 text-center border border-cream-dark">
@@ -662,6 +672,6 @@ export default function RSVPForm() {
           </>
         )}
       </button>
-    </form>
+    </motion.form>
   );
 }
