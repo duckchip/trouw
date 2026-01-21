@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
-import { User, Check, X, MessageSquare, Send, Loader2, PartyPopper, Clock } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { User, Check, X, MessageSquare, Send, Loader2, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
 import MusicSearch from './MusicSearch';
 
 // Google Apps Script Web App URL from environment variable
@@ -34,16 +35,90 @@ function getInviteLevel() {
   return null; // No valid code = no access
 }
 
+// Celebration confetti effect
+function launchCelebration() {
+  const duration = 3000;
+  const end = Date.now() + duration;
+
+  // Wedding colors: gold, white, light blue
+  const colors = ['#d4af37', '#ffffff', '#93c5fd', '#fef3c7'];
+
+  const frame = () => {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.7 },
+      colors: colors,
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.7 },
+      colors: colors,
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  };
+
+  // Initial burst
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: colors,
+  });
+
+  frame();
+}
+
+// Flying dove component
+function FlyingDoves() {
+  const doves = [
+    { delay: 0, startX: -50, startY: 300 },
+    { delay: 0.3, startX: -80, startY: 250 },
+    { delay: 0.6, startX: -30, startY: 350 },
+  ];
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {doves.map((dove, i) => (
+        <motion.div
+          key={i}
+          initial={{ x: dove.startX, y: dove.startY, opacity: 0 }}
+          animate={{ 
+            x: [dove.startX, 150, 400], 
+            y: [dove.startY, dove.startY - 150, dove.startY - 100],
+            opacity: [0, 1, 0],
+          }}
+          transition={{ 
+            duration: 2.5, 
+            delay: dove.delay,
+            ease: "easeOut",
+          }}
+          className="absolute text-4xl"
+        >
+          🕊️
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export default function RSVPForm() {
   const [formData, setFormData] = useState({
     guestName: '',
-    attendance: null, // true = yes, false = no
-    eventType: '', // reception, dinner, or party
+    attendance: null,
+    eventType: '',
     dietaryRestrictions: '',
   });
   const [selectedSongs, setSelectedSongs] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Determine which events to show based on invite level
   const inviteLevel = useMemo(() => getInviteLevel(), []);
@@ -68,27 +143,26 @@ export default function RSVPForm() {
   // If only one option, auto-select it
   const singleEvent = availableEvents.length === 1;
 
-  // No valid invite code - show friendly message
-  if (!inviteLevel) {
-    return (
-      <div className="text-center py-12 px-8">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-navy/10 rounded-full mb-6">
-          <span className="text-4xl">💌</span>
-        </div>
-        <h3 className="font-serif text-2xl md:text-3xl text-navy mb-4">
-          Uitnodiging nodig
-        </h3>
-        <p className="text-dusty max-w-md mx-auto">
-          Gebruik de link uit je uitnodiging om je aan te melden voor ons trouwfeest.
-        </p>
-      </div>
-    );
-  }
+  // Check if dietary should be shown - MUST be before any early returns
+  const showDietary = useMemo(() => {
+    if (inviteLevel === 'partyonly') return false;
+    if (singleEvent && availableEvents.length > 0) {
+      return availableEvents[0]?.id === 'reception' || availableEvents[0]?.id === 'dinner';
+    }
+    return formData.eventType === 'reception' || formData.eventType === 'dinner';
+  }, [inviteLevel, singleEvent, availableEvents, formData.eventType]);
+
+  // Launch celebration when submitted successfully (for attending guests)
+  useEffect(() => {
+    if (isSubmitted && formData.attendance) {
+      setShowCelebration(true);
+      launchCelebration();
+    }
+  }, [isSubmitted, formData.attendance]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation
     if (!formData.guestName.trim()) {
       toast.error('Vul alsjeblieft je naam in');
       return;
@@ -99,8 +173,7 @@ export default function RSVPForm() {
       return;
     }
 
-    // Use auto-selected event for single-event invites
-    const selectedEventId = singleEvent ? availableEvents[0].id : formData.eventType;
+    const selectedEventId = singleEvent ? availableEvents[0]?.id : formData.eventType;
 
     if (formData.attendance && !selectedEventId) {
       toast.error('Selecteer vanaf welk moment je erbij bent');
@@ -121,18 +194,13 @@ export default function RSVPForm() {
     };
 
     try {
-      // Send to Google Sheets via Apps Script
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
+      await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors', // Required for Apps Script
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData),
       });
 
-      // Since no-cors mode doesn't return readable response,
-      // we assume success if no error was thrown
       setIsSubmitted(true);
       toast.success('Bedankt voor je reactie!');
     } catch (error) {
@@ -143,21 +211,60 @@ export default function RSVPForm() {
     }
   };
 
-  // Success State
+  // No valid invite code
+  if (!inviteLevel) {
+    return (
+      <div className="text-center py-12 px-8">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-navy/10 rounded-full mb-6">
+          <span className="text-4xl">💌</span>
+        </div>
+        <h3 className="font-serif text-2xl md:text-3xl text-navy mb-4">
+          Uitnodiging nodig
+        </h3>
+        <p className="text-dusty max-w-md mx-auto">
+          Gebruik de link uit je uitnodiging om je aan te melden voor ons trouwfeest.
+        </p>
+      </div>
+    );
+  }
+
+  // Success State with celebration
   if (isSubmitted) {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-16 px-8"
+        className="text-center py-16 px-8 relative"
       >
+        {showCelebration && <FlyingDoves />}
+        
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
           transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-          className="inline-flex items-center justify-center w-24 h-24 bg-navy/10 rounded-full mb-6"
+          className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-gold/20 to-navy/10 rounded-full mb-6 relative"
         >
-          <PartyPopper className="w-12 h-12 text-navy" />
+          <span className="text-5xl">{formData.attendance ? '🎉' : '💝'}</span>
+          {formData.attendance && (
+            <>
+              <motion.span
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 }}
+                className="absolute -top-2 -right-2 text-2xl"
+              >
+                🕊️
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7 }}
+                className="absolute -bottom-1 -left-2 text-2xl"
+              >
+                🕊️
+              </motion.span>
+            </>
+          )}
         </motion.div>
         
         <motion.h3
@@ -179,13 +286,34 @@ export default function RSVPForm() {
             ? 'We kijken ernaar uit om je te zien op onze speciale dag!'
             : 'We zullen je missen, maar we begrijpen het. We houden je op de hoogte!'}
         </motion.p>
+
+        {formData.attendance && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-6 flex justify-center gap-2 text-2xl"
+          >
+            {['💒', '💍', '🥂', '💐', '🎶'].map((emoji, i) => (
+              <motion.span
+                key={i}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.9 + i * 0.1 }}
+              >
+                {emoji}
+              </motion.span>
+            ))}
+          </motion.div>
+        )}
         
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 1.2 }}
           onClick={() => {
             setIsSubmitted(false);
+            setShowCelebration(false);
             setFormData({ guestName: '', attendance: null, eventType: '', dietaryRestrictions: '' });
             setSelectedSongs([]);
           }}
@@ -196,20 +324,6 @@ export default function RSVPForm() {
       </motion.div>
     );
   }
-
-  // Check if dietary should be shown (only for guests who eat: reception, dinner, or full event starting before party)
-  const showDietary = useMemo(() => {
-    // Party-only guests don't need dietary
-    if (inviteLevel === 'partyonly') return false;
-    
-    // For single event invites
-    if (singleEvent) {
-      return availableEvents[0]?.id === 'reception' || availableEvents[0]?.id === 'dinner';
-    }
-    
-    // For multi-event invites, show if they selected reception or dinner
-    return formData.eventType === 'reception' || formData.eventType === 'dinner';
-  }, [inviteLevel, singleEvent, availableEvents, formData.eventType]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -302,7 +416,7 @@ export default function RSVPForm() {
             )}
 
             {/* Single event confirmation message */}
-            {singleEvent && (
+            {singleEvent && availableEvents.length > 0 && (
               <div className="bg-cream-dark/50 rounded-xl p-4 text-center">
                 <span className="text-2xl">{availableEvents[0].icon}</span>
                 <p className="text-navy font-medium mt-2">
@@ -311,7 +425,7 @@ export default function RSVPForm() {
               </div>
             )}
 
-            {/* Dietary Restrictions - only show for reception/dinner guests */}
+            {/* Dietary Restrictions */}
             {(singleEvent || formData.eventType) && showDietary && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
@@ -333,17 +447,17 @@ export default function RSVPForm() {
               </motion.div>
             )}
 
-            {/* Spotify Song Selection */}
+            {/* Music Selection */}
             {(singleEvent || formData.eventType) && (
               <div className="space-y-3 pt-4 border-t border-cream-dark">
                 <h3 className="font-serif text-xl text-navy">🎵 Muziekwensen</h3>
                 <p className="text-dusty text-sm">
                   Kies tot 3 nummers die je graag wilt horen op ons feest!
                 </p>
-<MusicSearch 
-                selectedSongs={selectedSongs}
-                onSongsChange={setSelectedSongs}
-              />
+                <MusicSearch 
+                  selectedSongs={selectedSongs}
+                  onSongsChange={setSelectedSongs}
+                />
               </div>
             )}
           </motion.div>
