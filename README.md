@@ -2,7 +2,7 @@
 
 A beautiful wedding invitation website built with React, Vite, and Tailwind CSS.
 
-**Live site:** [duckchip.github.io/trouw](https://duckchip.github.io/trouw/)
+**Live site:** [hanna-en-tristan.be](https://hanna-en-tristan.be/)
 
 ## ✨ Features
 
