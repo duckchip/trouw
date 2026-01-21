@@ -1,4 +1,4 @@
-import { MapPin, Navigation, Clock, Mail } from 'lucide-react';
+import { MapPin, Navigation, Clock, Mail, ExternalLink } from 'lucide-react';
 
 // Google Maps API Key from environment variable
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -37,7 +37,15 @@ export default function VenueMap() {
             <div>
               <h4 className="font-semibold text-navy mb-1">Locatie</h4>
               <p className="text-dusty text-sm">
-                {venueName}<br />
+                <a 
+                  href="https://outfort.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-navy hover:text-navy-dark font-medium inline-flex items-center gap-1 hover:underline"
+                >
+                  {venueName}
+                  <ExternalLink className="w-3 h-3" />
+                </a><br />
                 Hoofdfrontweg 1<br />
                 2660 Hoboken, België
               </p>
