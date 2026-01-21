@@ -47,28 +47,6 @@ function App() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Watercolor mockingbird decoration */}
-        <motion.div
-          className="absolute left-0 top-[60%] -translate-y-1/2 pointer-events-none z-0"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 2, delay: 0.8, ease: 'easeOut' }}
-        >
-          <motion.img
-            src="/images/mockingbird.png"
-            alt=""
-            className="w-56 sm:w-72 md:w-96 lg:w-[450px] h-auto opacity-10 sm:opacity-12 md:opacity-15"
-            animate={{ 
-              rotate: [0, 3, 0, -2, 0],
-              y: [0, -8, 0, 5, 0],
-            }}
-            transition={{ 
-              duration: 8, 
-              repeat: Infinity, 
-              ease: 'easeInOut',
-            }}
-          />
-        </motion.div>
 
         <motion.div 
           className="relative z-10 text-center px-6"
@@ -84,15 +62,33 @@ function App() {
             Wij gaan trouwen
           </motion.p>
           
-          {/* Names */}
-          <motion.h1 
+          {/* Names with bird behind */}
+          <motion.div 
             variants={fadeInUp}
-            className="font-serif text-6xl md:text-8xl lg:text-9xl text-navy mb-6 leading-tight"
+            className="relative mb-6"
           >
-            Tristan
-            <span className="block text-3xl md:text-4xl lg:text-5xl text-dusty my-2 md:my-4">&</span>
-            Hanna
-          </motion.h1>
+            {/* Watercolor mockingbird - behind names */}
+            <motion.img
+              src="/images/mockingbird.png"
+              alt=""
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 md:w-96 lg:w-[450px] h-auto opacity-10 pointer-events-none"
+              animate={{ 
+                rotate: [0, 2, 0, -2, 0],
+                y: [0, -5, 0, 3, 0],
+              }}
+              transition={{ 
+                duration: 6, 
+                repeat: Infinity, 
+                ease: 'easeInOut',
+              }}
+            />
+            
+            <h1 className="relative z-10 font-serif text-6xl md:text-8xl lg:text-9xl text-navy leading-tight">
+              Tristan
+              <span className="block text-3xl md:text-4xl lg:text-5xl text-dusty my-2 md:my-4">&</span>
+              Hanna
+            </h1>
+          </motion.div>
 
           {/* Heart Icon */}
           <motion.div 
