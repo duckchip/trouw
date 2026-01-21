@@ -2,9 +2,8 @@ import { useState, useCallback, useRef } from 'react';
 import { Search, Music, X, Plus, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Using iTunes Search API via CORS proxy for production
-const ITUNES_BASE_URL = 'https://itunes.apple.com/search';
-const CORS_PROXY = 'https://corsproxy.io/?';
+// Using iTunes Search API - free, no API key needed!
+const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
 
 export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,13 +22,9 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     setIsSearching(true);
     
     try {
-      // Use CORS proxy in production, direct in development
-      const itunesUrl = `${ITUNES_BASE_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`;
-      const fetchUrl = window.location.hostname === 'localhost' 
-        ? itunesUrl 
-        : `${CORS_PROXY}${encodeURIComponent(itunesUrl)}`;
-      
-      const response = await fetch(fetchUrl);
+      const response = await fetch(
+        `${ITUNES_SEARCH_URL}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=8`
+      );
       const data = await response.json();
       
       // Transform iTunes results to our format
