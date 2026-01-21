@@ -147,7 +147,8 @@ export default function RSVPForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  const inviteLevel = useMemo(() => getInviteLevel(), []);
+  // Initialize from URL (for QR scans) or null (show code input)
+  const [inviteLevel, setInviteLevel] = useState(() => getInviteLevel());
 
   const availableEvents = useMemo(() => {
     if (!inviteLevel) return [];
@@ -277,7 +278,7 @@ export default function RSVPForm() {
 
     // Check if it's a valid code
     if (INVITE_CODES[code]) {
-      window.location.href = `${window.location.origin}${window.location.pathname}?i=${code}#rsvp`;
+      setInviteLevel(INVITE_CODES[code]);
     } else {
       setCodeError('Ongeldige code. Controleer je uitnodiging.');
     }
