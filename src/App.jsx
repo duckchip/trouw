@@ -1,7 +1,6 @@
 import { Heart, Calendar, MapPin, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
-import HeroPhotos from './components/HeroPhotos';
 import InfiniteGallery from './components/InfiniteGallery';
 import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
@@ -50,7 +49,7 @@ function App() {
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         {/* Watercolor mockingbird decoration */}
         <motion.div
-          className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none z-0"
+          className="absolute left-0 top-[60%] -translate-y-1/2 pointer-events-none z-0"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 2, delay: 0.8, ease: 'easeOut' }}
@@ -157,11 +156,8 @@ function App() {
       </section>
 
       {/* RSVP Section */}
-      <section id="rsvp" className="relative py-16 md:py-24 px-6 overflow-hidden">
-        {/* Floating polaroid photos in background */}
-        <HeroPhotos />
-        
-        <div className="relative z-10 max-w-2xl mx-auto">
+      <section id="rsvp" className="py-16 md:py-24 px-6">
+        <div className="max-w-2xl mx-auto">
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
