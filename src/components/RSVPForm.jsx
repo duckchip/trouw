@@ -431,7 +431,7 @@ export default function RSVPForm() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="space-y-8 overflow-hidden"
+            className="space-y-8"
           >
             {/* Event Type Selection */}
             {!singleEvent && (

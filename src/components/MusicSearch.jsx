@@ -112,7 +112,7 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-20 max-h-80 overflow-y-auto"
+                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-cream-dark overflow-hidden z-50 max-h-80 overflow-y-auto"
               >
                 {searchResults.map((track) => {
                   const isSelected = selectedSongs.some(s => s.id === track.id);
