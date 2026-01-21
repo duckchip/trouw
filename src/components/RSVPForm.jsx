@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { User, Users, Check, X, MessageSquare, Send, Loader2, Clock, Plus, Trash2 } from 'lucide-react';
+import { User, Users, Check, X, MessageSquare, Send, Loader2, Clock, Plus, Trash2, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -17,13 +17,12 @@ const allEventOptions = [
 ];
 
 // Obfuscated invite codes - change these to your own random strings!
+// Simple, readable invite codes - easy to type!
 const INVITE_CODES = {
-  'c2m7j': 'ceremony',     // Ceremony only (11:00)
-  'a4k9n': 'ceremonyall',  // Ceremony + Reception + Dinner + Party (full day from 11:00)
-  'r7x2k': 'reception',    // Reception only (17:00)
-  'd9m4p': 'dinner',       // Reception + Dinner (17:00 + 19:00)
-  'p5n1q': 'partyonly',    // Party only (21:00)
-  'f3h8w': 'full',         // Reception + Dinner + Party (17:00 onwards)
+  'JAWOORD': 'ceremonyall', // Ceremony + Reception + Dinner + Party (full day from 11:00)
+  'BUBBELS': 'reception',   // Reception only (17:00)
+  'DANS': 'partyonly',      // Party only (21:00)
+  'DINNER': 'full',         // Reception + Dinner + Party (17:00 onwards)
 };
 
 // Invite level descriptions
@@ -70,7 +69,7 @@ const INVITE_DESCRIPTIONS = {
 
 function getInviteLevel() {
   const params = new URLSearchParams(window.location.search);
-  const code = params.get('u');
+  const code = params.get('i')?.toUpperCase();
   if (code && INVITE_CODES[code]) {
     return INVITE_CODES[code];
   }
@@ -266,16 +265,56 @@ export default function RSVPForm() {
     }
   };
 
+  const [inviteCode, setInviteCode] = useState('');
+  const [codeError, setCodeError] = useState('');
+
+  const handleCodeSubmit = (e) => {
+    e.preventDefault();
+    setCodeError('');
+    
+    const code = inviteCode.trim().toUpperCase();
+    if (!code) return;
+
+    // Check if it's a valid code
+    if (INVITE_CODES[code]) {
+      window.location.href = `${window.location.origin}${window.location.pathname}?i=${code}`;
+    } else {
+      setCodeError('Ongeldige code. Controleer je uitnodiging.');
+    }
+  };
+
   if (!inviteLevel) {
     return (
-      <div className="text-center py-12 px-8">
+      <div className="text-center py-8 px-6">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-navy/10 rounded-full mb-6">
           <span className="text-4xl">💌</span>
         </div>
-        <h3 className="font-serif text-2xl md:text-3xl text-navy mb-4">Uitnodiging nodig</h3>
-        <p className="text-dusty max-w-md mx-auto">
-          Scan de QR-code op je uitnodiging om je aan te melden voor ons trouwfeest.
+        <h3 className="font-serif text-2xl md:text-3xl text-navy mb-4">Welkom!</h3>
+        <p className="text-dusty max-w-md mx-auto mb-6">
+          Vul de code in van je uitnodiging om je aan te melden.
         </p>
+
+        <form onSubmit={handleCodeSubmit} className="max-w-xs mx-auto space-y-4">
+          <input
+            type="text"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+            placeholder="CODE"
+            className="w-full px-4 py-4 border-2 border-cream-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy text-center text-2xl font-medium tracking-widest uppercase"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+          />
+          {codeError && (
+            <p className="text-red-500 text-sm">{codeError}</p>
+          )}
+          <button
+            type="submit"
+            className="bg-navy text-white py-3 px-8 rounded-xl hover:bg-navy-dark transition-colors font-medium w-full"
+          >
+            Ga verder
+          </button>
+        </form>
       </div>
     );
   }
@@ -590,7 +629,10 @@ export default function RSVPForm() {
             {/* Music Selection */}
             {(singleEvent || eventType) && (
               <div className="space-y-3 pt-4 border-t border-cream-dark">
-                <h3 className="font-serif text-xl text-navy">🎵 Muziekwensen</h3>
+                <label className="flex items-center gap-2 text-navy font-medium">
+                  <Music className="w-4 h-4" />
+                  Muziekwensen
+                </label>
                 <p className="text-dusty text-sm">
                   Kies tot 3 nummers die jullie graag willen horen op ons feest!
                 </p>
