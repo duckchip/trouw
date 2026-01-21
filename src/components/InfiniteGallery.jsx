@@ -1,6 +1,6 @@
 import { motion, useMotionValue, animate, AnimatePresence } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Engagement/proposal photos - the real deal! 💍
 const images = [
@@ -16,25 +16,53 @@ const images = [
 // Triple the images for seamless looping
 const duplicatedImages = [...images, ...images, ...images];
 
-// Lightbox component
-function Lightbox({ src, onClose }) {
-  // Close on escape key
+// Lightbox component with navigation
+function Lightbox({ imageIndex, onClose, onPrev, onNext }) {
+  const [direction, setDirection] = useState(0);
+
+  // Keyboard navigation
   useEffect(() => {
-    const handleEscape = (e) => {
+    const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') {
+        setDirection(-1);
+        onPrev();
+      }
+      if (e.key === 'ArrowRight') {
+        setDirection(1);
+        onNext();
+      }
     };
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
     
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [onClose]);
+  }, [onClose, onPrev, onNext]);
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setDirection(-1);
+    onPrev();
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setDirection(1);
+    onNext();
+  };
+
+  const slideVariants = {
+    enter: (dir) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
+  };
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 cursor-pointer"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -48,17 +76,44 @@ function Lightbox({ src, onClose }) {
         <X className="w-8 h-8 text-white" />
       </button>
 
-      {/* Image */}
-      <motion.img
-        src={src}
-        alt="Enlarged photo"
-        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        onClick={(e) => e.stopPropagation()}
-      />
+      {/* Previous button */}
+      <button
+        className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+        onClick={handlePrev}
+      >
+        <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 text-white" />
+      </button>
+
+      {/* Next button */}
+      <button
+        className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+        onClick={handleNext}
+      >
+        <ChevronRight className="w-6 h-6 md:w-8 md:h-8 text-white" />
+      </button>
+
+      {/* Image counter */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
+        {imageIndex + 1} / {images.length}
+      </div>
+
+      {/* Image with animation */}
+      <AnimatePresence mode="wait" custom={direction}>
+        <motion.img
+          key={imageIndex}
+          src={images[imageIndex]}
+          alt={`Photo ${imageIndex + 1}`}
+          className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+          custom={direction}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          onClick={(e) => e.stopPropagation()}
+          draggable={false}
+        />
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -66,7 +121,7 @@ function Lightbox({ src, onClose }) {
 export default function InfiniteGallery() {
   const containerRef = useRef(null);
   const [isInteracting, setIsInteracting] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const x = useMotionValue(0);
   const animationRef = useRef(null);
@@ -105,7 +160,7 @@ export default function InfiniteGallery() {
   };
 
   useEffect(() => {
-    if (isInteracting || selectedImage) {
+    if (isInteracting || selectedIndex !== null) {
       stopAutoScroll();
     } else {
       const timeout = setTimeout(() => {
@@ -113,7 +168,7 @@ export default function InfiniteGallery() {
       }, 1500);
       return () => clearTimeout(timeout);
     }
-  }, [isInteracting, selectedImage]);
+  }, [isInteracting, selectedIndex]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -144,19 +199,33 @@ export default function InfiniteGallery() {
     }, 100);
   };
 
-  const handleImageClick = (src) => {
+  const handleImageClick = (index) => {
     // Only open lightbox if not dragging
     if (!isDragging) {
-      setSelectedImage(src);
+      // Normalize index to original images array
+      setSelectedIndex(index % images.length);
     }
+  };
+
+  const handlePrev = () => {
+    setSelectedIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleNext = () => {
+    setSelectedIndex((prev) => (prev + 1) % images.length);
   };
 
   return (
     <>
       {/* Lightbox */}
       <AnimatePresence>
-        {selectedImage && (
-          <Lightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+        {selectedIndex !== null && (
+          <Lightbox 
+            imageIndex={selectedIndex} 
+            onClose={() => setSelectedIndex(null)}
+            onPrev={handlePrev}
+            onNext={handleNext}
+          />
         )}
       </AnimatePresence>
 
@@ -199,7 +268,7 @@ export default function InfiniteGallery() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.3 }}
-              onClick={() => handleImageClick(src)}
+              onClick={() => handleImageClick(index)}
             >
               <img
                 src={src}
