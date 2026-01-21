@@ -1,15 +1,14 @@
 import { motion } from 'framer-motion';
 
-// Unsplash placeholder images for wedding theme
+// Engagement/proposal photos - the real deal! 💍
 const images = [
-  'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop', // wedding couple
-  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&h=400&fit=crop', // wedding venue
-  'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&h=400&fit=crop', // wedding flowers
-  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&h=400&fit=crop', // wedding rings
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop', // wedding cake
-  'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=600&h=400&fit=crop', // wedding celebration
-  'https://images.unsplash.com/photo-1460978812857-470ed1c77af0?w=600&h=400&fit=crop', // wedding dance
-  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=400&fit=crop', // wedding bouquet
+  '/images/proposal-1.jpg',
+  '/images/proposal-2.jpg',
+  '/images/proposal-3.jpg',
+  '/images/proposal-4.jpg',
+  '/images/proposal-5.jpg',
+  '/images/proposal-6.jpg',
+  '/images/proposal-7.jpg',
 ];
 
 // Double the images for seamless looping
