@@ -66,6 +66,7 @@ const INVITE_CODES = {
   'BUBBELS': 'reception',   // Reception only (17:00)
   'DANS': 'partyonly',      // Party only (21:00)
   'DINNER': 'full',         // Reception + Dinner + Party (17:00 onwards)
+  'TESTCODE': 'test',       // Test mode - full access but doesn't send to Google
 };
 
 // Invite level descriptions
@@ -107,6 +108,15 @@ const INVITE_DESCRIPTIONS = {
     title: 'Jullie zijn uitgenodigd voor de receptie, het diner en het feest',
     description: 'Vanaf 17:00 verwelkomen we jullie in Outfort voor de receptie, gevolgd door het diner om 19:00 en het feest om 21:00.',
     icon: '🥳',
+  },
+  'test': {
+    title: '🧪 Test Modus',
+    description: 'Dit is een test. Alle opties zijn beschikbaar maar er wordt niets verzonden.',
+    icon: '🧪',
+    extraLocation: {
+      name: 'Oude Vredegerecht',
+      address: 'Grote Steenweg 13, 2600 Berchem',
+    },
   },
 };
 
@@ -199,6 +209,7 @@ export default function RSVPForm() {
       case 'ceremony':
         return allEventOptions.filter((e) => e.id === 'ceremony');
       case 'ceremonyall':
+      case 'test': // Test mode has access to all events
         return allEventOptions; // All events including ceremony
       case 'reception':
         return allEventOptions.filter((e) => e.id === 'reception');
@@ -276,23 +287,35 @@ export default function RSVPForm() {
     const eventLabel = selectedEvent ? `${selectedEvent.label} (${selectedEvent.time})` : 'N.v.t.';
 
     try {
-      // Submit each guest separately to Google Sheets
-      for (const guest of filledGuests) {
-        const submissionData = {
+      // Skip Google submission in test mode
+      if (inviteLevel === 'test') {
+        console.log('TEST MODE - Skipping Google submission');
+        console.log('Would have submitted:', filledGuests.map(guest => ({
           name: guest.name,
           attendance: attendance ? 'Ja' : 'Nee',
           eventType: eventLabel,
           dietary: guest.dietary || 'Geen',
           songs: selectedSongs.map((s) => `${s.name} - ${s.artist}`),
-          submittedAt: new Date().toISOString(),
-        };
+        })));
+      } else {
+        // Submit each guest separately to Google Sheets
+        for (const guest of filledGuests) {
+          const submissionData = {
+            name: guest.name,
+            attendance: attendance ? 'Ja' : 'Nee',
+            eventType: eventLabel,
+            dietary: guest.dietary || 'Geen',
+            songs: selectedSongs.map((s) => `${s.name} - ${s.artist}`),
+            submittedAt: new Date().toISOString(),
+          };
 
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(submissionData),
-        });
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(submissionData),
+          });
+        }
       }
 
       setIsSubmitted(true);
@@ -303,9 +326,11 @@ export default function RSVPForm() {
       }, 100);
       
       toast.success(
-        filledGuests.length > 1
-          ? `Bedankt! ${filledGuests.length} gasten geregistreerd.`
-          : 'Bedankt voor je reactie!'
+        inviteLevel === 'test'
+          ? `🧪 Test succesvol! (niet verzonden)`
+          : filledGuests.length > 1
+            ? `Bedankt! ${filledGuests.length} gasten geregistreerd.`
+            : 'Bedankt voor je reactie!'
       );
     } catch (error) {
       console.error('Submission error:', error);
