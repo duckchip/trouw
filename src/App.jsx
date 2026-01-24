@@ -17,36 +17,8 @@ function useWelcomeSound() {
   const [hasPlayed, setHasPlayed] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioReady, setAudioReady] = useState(false);
-  const audioRef = useRef(null);
   const previewUrlRef = useRef(null);
-
-  // Create and setup audio element
-  const createAudio = (url) => {
-    const audio = new Audio();
-    audio.preload = 'auto';
-    audio.volume = 0.5;
-    
-    // Fade out at end of song
-    audio.addEventListener('timeupdate', () => {
-      if (!audio.duration) return;
-      const fadeStart = audio.duration - 3;
-      if (audio.currentTime >= fadeStart) {
-        const fadeProgress = (audio.currentTime - fadeStart) / 3;
-        audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
-      }
-    });
-    
-    audio.addEventListener('ended', () => {
-      setIsPlaying(false);
-    });
-    
-    audio.src = url;
-    audio.load();
-    
-    return audio;
-  };
+  const audioRef = useRef(null);
 
   useEffect(() => {
     // Try iTunes API (no CORS proxy needed)
@@ -109,14 +81,24 @@ function useWelcomeSound() {
         if (previewUrl) {
           console.log('Found preview URL:', previewUrl);
           previewUrlRef.current = previewUrl;
-          audioRef.current = createAudio(previewUrl);
-          setAudioReady(true);
           
-          // Try to autoplay
+          // Try to autoplay (will likely fail on mobile)
           try {
+            audioRef.current = new Audio(previewUrl);
+            audioRef.current.volume = 0.5;
             await audioRef.current.play();
             setHasPlayed(true);
-            setIsPlaying(true);
+            
+            // Add fade out
+            audioRef.current.addEventListener('timeupdate', () => {
+              const audio = audioRef.current;
+              if (!audio || !audio.duration) return;
+              const fadeStart = audio.duration - 3;
+              if (audio.currentTime >= fadeStart) {
+                const fadeProgress = (audio.currentTime - fadeStart) / 3;
+                audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
+              }
+            });
           } catch {
             // Autoplay blocked - show prompt
             setShowPrompt(true);
@@ -140,50 +122,49 @@ function useWelcomeSound() {
     };
   }, []);
 
-  const playSound = async () => {
-    if (isPlaying) return;
+  // Play sound - creates fresh audio on user gesture for mobile compatibility
+  const playSound = () => {
+    if (!previewUrlRef.current) {
+      console.log('No preview URL available');
+      return;
+    }
     
     try {
-      // If we have a URL but audio failed, recreate it (helps on mobile)
-      if (previewUrlRef.current && (!audioRef.current || audioRef.current.error)) {
-        console.log('Recreating audio element');
-        audioRef.current = createAudio(previewUrlRef.current);
-      }
+      // Always create fresh audio element on user gesture (required for mobile)
+      const audio = new Audio(previewUrlRef.current);
+      audio.volume = 0.5;
       
-      if (!audioRef.current) {
-        console.log('No audio available');
-        return;
-      }
-      
-      // Reset to beginning if already played
-      if (audioRef.current.currentTime > 0) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.volume = 0.5;
-      }
-      
-      await audioRef.current.play();
-      setHasPlayed(true);
-      setIsPlaying(true);
-      setShowPrompt(false);
-    } catch (e) {
-      console.log('Audio play failed:', e);
-      // On some browsers, we need to create a fresh audio element on user interaction
-      if (previewUrlRef.current) {
-        try {
-          console.log('Trying fresh audio element');
-          audioRef.current = createAudio(previewUrlRef.current);
-          await audioRef.current.play();
-          setHasPlayed(true);
-          setIsPlaying(true);
-          setShowPrompt(false);
-        } catch (e2) {
-          console.log('Fresh audio also failed:', e2);
+      // Add fade out at end
+      audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const fadeStart = audio.duration - 3;
+        if (audio.currentTime >= fadeStart) {
+          const fadeProgress = (audio.currentTime - fadeStart) / 3;
+          audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
         }
+      });
+      
+      // Play immediately within the user gesture
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('Audio playing successfully');
+            audioRef.current = audio;
+            setHasPlayed(true);
+            setShowPrompt(false);
+          })
+          .catch((error) => {
+            console.log('Play failed:', error);
+          });
       }
+    } catch (e) {
+      console.log('Audio error:', e);
     }
   };
 
-  return { showPrompt, playSound, hasPlayed, isLoading, isPlaying, audioReady };
+  return { showPrompt, playSound, hasPlayed, isLoading };
 }
 
 // Dark to light page entrance overlay
@@ -211,7 +192,7 @@ function PageEntranceOverlay() {
 }
 
 // Sound prompt component
-function SoundPrompt({ onPlay, isReady }) {
+function SoundPrompt({ onPlay }) {
   const [tapped, setTapped] = useState(false);
   
   const handleClick = () => {
@@ -439,7 +420,7 @@ const staggerContainer = {
 
 function App() {
   const weddingDate = new Date('2026-07-31');
-  const { showPrompt, playSound, hasPlayed, isLoading, audioReady } = useWelcomeSound();
+  const { showPrompt, playSound, hasPlayed, isLoading } = useWelcomeSound();
   
   return (
     <div className="min-h-screen bg-cream">
@@ -449,7 +430,7 @@ function App() {
       {/* Sound prompt if autoplay blocked */}
       <AnimatePresence>
         {showPrompt && !hasPlayed && !isLoading && (
-          <SoundPrompt onPlay={playSound} isReady={audioReady} />
+          <SoundPrompt onPlay={playSound} />
         )}
       </AnimatePresence>
 
