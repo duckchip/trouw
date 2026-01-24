@@ -7,8 +7,9 @@ import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
 import LoveCounter from './components/LoveCounter';
 
-// Deezer API with CORS proxy (same as MusicSearch)
+// Music APIs for preview
 const DEEZER_SEARCH_URL = 'https://api.deezer.com/search';
+const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
 const CORS_PROXY = 'https://corsproxy.io/?';
 
 // Hook to handle welcome sound on page load
@@ -20,8 +21,52 @@ function useWelcomeSound() {
   const previewUrlRef = useRef(null);
 
   useEffect(() => {
-    // Fetch preview URL from Deezer API
-    const fetchPreview = async () => {
+    // Setup audio with fade out
+    const setupAudio = (previewUrl) => {
+      console.log('Setting up audio with URL:', previewUrl);
+      
+      previewUrlRef.current = previewUrl;
+      audioRef.current = new Audio(previewUrl);
+      audioRef.current.volume = 0.5;
+      
+      // Fade out at end of song
+      audioRef.current.addEventListener('timeupdate', () => {
+        const audio = audioRef.current;
+        if (!audio || !audio.duration) return;
+        const fadeStart = audio.duration - 3;
+        if (audio.currentTime >= fadeStart) {
+          const fadeProgress = (audio.currentTime - fadeStart) / 3;
+          audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
+        }
+      });
+      
+      return audioRef.current;
+    };
+
+    // Try iTunes API (no CORS proxy needed, supports JSONP-like)
+    const tryItunes = async () => {
+      try {
+        const response = await fetch(
+          `${ITUNES_SEARCH_URL}?term=${encodeURIComponent('raye where is my husband')}&media=music&limit=5`
+        );
+        const data = await response.json();
+        
+        const track = data.results?.find(t => 
+          t.trackName?.toLowerCase().includes('husband') && 
+          t.artistName?.toLowerCase().includes('raye')
+        ) || data.results?.[0];
+        
+        if (track?.previewUrl) {
+          return track.previewUrl;
+        }
+      } catch (e) {
+        console.log('iTunes search failed:', e);
+      }
+      return null;
+    };
+
+    // Try Deezer API with proxy
+    const tryDeezer = async () => {
       try {
         const searchUrl = `${DEEZER_SEARCH_URL}?q=${encodeURIComponent('raye where is my husband')}&limit=5`;
         const fetchUrl = `${CORS_PROXY}${encodeURIComponent(searchUrl)}`;
@@ -32,27 +77,33 @@ function useWelcomeSound() {
         });
         const data = await response.json();
         
-        // Find the track "Where Is My Husband!" by RAYE
         const track = data.data?.find(t => 
           t.title?.toLowerCase().includes('husband') && 
           t.artist?.name?.toLowerCase().includes('raye')
         ) || data.data?.[0];
         
         if (track?.preview) {
-          previewUrlRef.current = track.preview;
-          audioRef.current = new Audio(track.preview);
-          audioRef.current.volume = 0.5;
-          
-          // Fade out at end of song
-          audioRef.current.addEventListener('timeupdate', () => {
-            const audio = audioRef.current;
-            if (!audio) return;
-            const fadeStart = audio.duration - 3; // Start fading 3 seconds before end
-            if (audio.currentTime >= fadeStart) {
-              const fadeProgress = (audio.currentTime - fadeStart) / 3;
-              audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
-            }
-          });
+          return track.preview;
+        }
+      } catch (e) {
+        console.log('Deezer search failed:', e);
+      }
+      return null;
+    };
+
+    // Fetch preview URL - try iTunes first, then Deezer
+    const fetchPreview = async () => {
+      try {
+        // Try iTunes first (more reliable, no CORS issues)
+        let previewUrl = await tryItunes();
+        
+        // Fallback to Deezer if iTunes fails
+        if (!previewUrl) {
+          previewUrl = await tryDeezer();
+        }
+        
+        if (previewUrl) {
+          setupAudio(previewUrl);
           
           // Try to autoplay
           try {
@@ -63,11 +114,10 @@ function useWelcomeSound() {
             setShowPrompt(true);
           }
         } else {
-          // No preview found, don't show button
-          console.log('No Deezer preview found');
+          console.log('No preview found from any source');
         }
       } catch (error) {
-        console.log('Failed to fetch Deezer preview:', error);
+        console.log('Failed to fetch preview:', error);
       } finally {
         setIsLoading(false);
       }
@@ -128,8 +178,8 @@ function SoundPrompt({ onPlay }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       onClick={onPlay}
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center gap-2 hover:bg-white transition-colors cursor-pointer"
-      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      className="fixed left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer"
+      style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
     >
       <Volume2 className="w-5 h-5 text-navy flex-shrink-0" />
       <span className="text-navy text-sm font-medium whitespace-nowrap">Tik voor muziek! 🎵</span>
