@@ -389,11 +389,11 @@ function App() {
             variants={fadeInUp}
             className="relative mb-6"
           >
-            {/* Watercolor mockingbird - behind names */}
+            {/* Pigeons - behind names */}
             <motion.img
-              src="/images/mockingbird.png"
+              src="/images/pigeons.png"
               alt=""
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 md:w-96 lg:w-[450px] h-auto opacity-10 pointer-events-none"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 md:w-96 lg:w-[450px] h-auto opacity-[0.12] pointer-events-none"
               animate={{ 
                 rotate: [0, 2, 0, -2, 0],
                 y: [0, -5, 0, 3, 0],
