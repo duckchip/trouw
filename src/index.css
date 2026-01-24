@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  /* Deep Navy for primary actions/headings */
-  --color-navy: #1e3a8a;
-  --color-navy-light: #2563eb;
-  --color-navy-dark: #1e3a6e;
+  /* Bordeaux/Burgundy for primary actions/headings - Burberry-inspired */
+  --color-navy: #722F37;
+  --color-navy-light: #8B3D46;
+  --color-navy-dark: #5A252C;
   
-  /* Dusty Blue for secondary elements */
-  --color-dusty: #64748b;
-  --color-dusty-light: #94a3b8;
-  --color-dusty-dark: #475569;
+  /* Warm Tan/Beige for secondary elements - Classic Burberry */
+  --color-dusty: #a89078;
+  --color-dusty-light: #c4b09a;
+  --color-dusty-dark: #8a7460;
   
-  /* Off-white backgrounds */
-  --color-cream: #faf8f5;
-  --color-cream-dark: #f1ece3;
+  /* Cream/White backgrounds */
+  --color-cream: #fdfbf7;
+  --color-cream-dark: #f5f0e8;
   
-  /* Accent colors */
-  --color-gold: #d4af37;
-  --color-gold-light: #e8c547;
+  /* Accent colors - Burberry gold */
+  --color-gold: #c9a959;
+  --color-gold-light: #dfc576;
   
-  /* Font families */
-  --font-serif: "Cormorant Garamond", Georgia, serif;
-  --font-sans: "Nunito Sans", system-ui, sans-serif;
+  /* Font families - Classic 2026 Wedding Typography */
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Raleway", system-ui, sans-serif;
 }
 
 /* Custom scrollbar for the gallery */

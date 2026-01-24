@@ -1,11 +1,224 @@
-import { Heart, Calendar, MapPin, ChevronDown, Copy, Check } from 'lucide-react';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { Heart, Calendar, MapPin, ChevronDown, Copy, Check, Volume2 } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import InfiniteGallery from './components/InfiniteGallery';
 import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
 import LoveCounter from './components/LoveCounter';
+
+// iTunes API to fetch song preview
+const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search?term=raye+where+is+my+husband&media=music&limit=5';
+
+// Hook to handle welcome sound on page load
+function useWelcomeSound() {
+  const [hasPlayed, setHasPlayed] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const audioRef = useRef(null);
+  const previewUrlRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch preview URL from iTunes API
+    const fetchPreview = async () => {
+      try {
+        const response = await fetch(ITUNES_SEARCH_URL);
+        const data = await response.json();
+        
+        // Find the track "Where Is My Husband!" by RAYE
+        const track = data.results?.find(t => 
+          t.trackName?.toLowerCase().includes('husband') && 
+          t.artistName?.toLowerCase().includes('raye')
+        ) || data.results?.[0];
+        
+        if (track?.previewUrl) {
+          previewUrlRef.current = track.previewUrl;
+          audioRef.current = new Audio(track.previewUrl);
+          audioRef.current.volume = 0.5;
+          
+          // Try to autoplay
+          try {
+            await audioRef.current.play();
+            setHasPlayed(true);
+          } catch {
+            // Autoplay blocked - show prompt
+            setShowPrompt(true);
+          }
+        }
+      } catch (error) {
+        console.log('Failed to fetch iTunes preview:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Small delay to let page settle
+    const timeout = setTimeout(fetchPreview, 500);
+
+    return () => {
+      clearTimeout(timeout);
+      audioRef.current?.pause();
+    };
+  }, []);
+
+  const playSound = async () => {
+    if (hasPlayed || !audioRef.current) return;
+    try {
+      await audioRef.current.play();
+      setHasPlayed(true);
+      setShowPrompt(false);
+    } catch (e) {
+      console.log('Audio play failed:', e);
+    }
+  };
+
+  return { showPrompt, playSound, hasPlayed, isLoading };
+}
+
+// Sound prompt component
+function SoundPrompt({ onPlay }) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      onClick={onPlay}
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center gap-2 hover:bg-white transition-colors cursor-pointer"
+    >
+      <Volume2 className="w-5 h-5 text-navy" />
+      <span className="text-navy text-sm font-medium">Klik voor muziek! 🎵</span>
+    </motion.button>
+  );
+}
+
+// Crisp bright sparkle using CSS star shape
+function CrispSparkle({ x, y, delay, size }) {
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{ 
+        left: x, 
+        top: y,
+      }}
+      initial={{ opacity: 0, scale: 0, rotate: 0 }}
+      animate={{ 
+        opacity: [0, 1, 1, 0],
+        scale: [0, 1.2, 1, 0],
+        rotate: [0, 90],
+      }}
+      transition={{
+        duration: 0.5,
+        delay,
+        repeat: Infinity,
+        repeatDelay: Math.random() * 2 + 0.8,
+        ease: "easeOut",
+      }}
+    >
+      {/* 4-point star using rotated squares */}
+      <div 
+        className="relative"
+        style={{ width: size, height: size }}
+      >
+        {/* Horizontal line */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white"
+          style={{ 
+            width: size * 2.5, 
+            height: 2,
+            boxShadow: '0 0 4px #fff, 0 0 8px #fff, 0 0 16px #c9a959',
+          }}
+        />
+        {/* Vertical line */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white"
+          style={{ 
+            width: 2, 
+            height: size * 2.5,
+            boxShadow: '0 0 4px #fff, 0 0 8px #fff, 0 0 16px #c9a959',
+          }}
+        />
+        {/* Diagonal line 1 */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/80"
+          style={{ 
+            width: size * 1.8, 
+            height: 1,
+            transform: 'translate(-50%, -50%) rotate(45deg)',
+            boxShadow: '0 0 3px #fff, 0 0 6px #c9a959',
+          }}
+        />
+        {/* Diagonal line 2 */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/80"
+          style={{ 
+            width: size * 1.8, 
+            height: 1,
+            transform: 'translate(-50%, -50%) rotate(-45deg)',
+            boxShadow: '0 0 3px #fff, 0 0 6px #c9a959',
+          }}
+        />
+        {/* Bright center */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full"
+          style={{ 
+            width: 4, 
+            height: 4,
+            boxShadow: '0 0 4px 2px #fff, 0 0 12px 4px #c9a959',
+          }}
+        />
+      </div>
+    </motion.div>
+  );
+}
+
+// Sparkles Container - Bright crisp sparkles
+function SparklesEffect() {
+  const sparkles = useMemo(() => {
+    return Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      x: `${Math.random() * 85 + 7}%`,
+      y: `${Math.random() * 75 + 12}%`,
+      delay: Math.random() * 3,
+      size: Math.random() * 8 + 6, // 6-14px
+    }));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {sparkles.map((sparkle) => (
+        <CrispSparkle 
+          key={sparkle.id} 
+          x={sparkle.x} 
+          y={sparkle.y} 
+          delay={sparkle.delay}
+          size={sparkle.size}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Animated Gradient Background
+function AnimatedGradient() {
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      animate={{
+        background: [
+          'radial-gradient(ellipse at 20% 20%, rgba(114, 47, 55, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(201, 169, 89, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
+          'radial-gradient(ellipse at 80% 30%, rgba(114, 47, 55, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 70%, rgba(201, 169, 89, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
+          'radial-gradient(ellipse at 30% 80%, rgba(114, 47, 55, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 70% 20%, rgba(201, 169, 89, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
+          'radial-gradient(ellipse at 20% 20%, rgba(114, 47, 55, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(201, 169, 89, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
+        ],
+      }}
+      transition={{
+        duration: 15,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    />
+  );
+}
 
 // Gift Info Component
 function GiftInfo() {
@@ -71,20 +284,28 @@ const staggerContainer = {
 
 function App() {
   const weddingDate = new Date('2026-07-31');
+  const { showPrompt, playSound, hasPlayed, isLoading } = useWelcomeSound();
   
   return (
     <div className="min-h-screen bg-cream">
+      {/* Sound prompt if autoplay blocked */}
+      <AnimatePresence>
+        {showPrompt && !hasPlayed && !isLoading && (
+          <SoundPrompt onPlay={playSound} />
+        )}
+      </AnimatePresence>
+
       <Toaster 
         position="top-center"
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#1e3a8a',
+            background: '#722F37',
             color: '#fff',
-            fontFamily: 'Nunito Sans, sans-serif',
+            fontFamily: 'Raleway, sans-serif',
           },
           success: {
-            iconTheme: { primary: '#fff', secondary: '#1e3a8a' },
+            iconTheme: { primary: '#fff', secondary: '#722F37' },
           },
           error: {
             style: { background: '#dc2626' },
@@ -94,6 +315,11 @@ function App() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* Animated Gradient Background */}
+        <AnimatedGradient />
+        
+        {/* Sparkle Particles */}
+        <SparklesEffect />
 
         <motion.div 
           className="relative z-10 text-center px-6"
