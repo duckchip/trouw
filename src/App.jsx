@@ -7,8 +7,9 @@ import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
 import LoveCounter from './components/LoveCounter';
 
-// iTunes API to fetch song preview
-const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search?term=raye+where+is+my+husband&media=music&limit=5';
+// Deezer API with CORS proxy (same as MusicSearch)
+const DEEZER_SEARCH_URL = 'https://api.deezer.com/search';
+const CORS_PROXY = 'https://corsproxy.io/?';
 
 // Hook to handle welcome sound on page load
 function useWelcomeSound() {
@@ -19,21 +20,27 @@ function useWelcomeSound() {
   const previewUrlRef = useRef(null);
 
   useEffect(() => {
-    // Fetch preview URL from iTunes API
+    // Fetch preview URL from Deezer API
     const fetchPreview = async () => {
       try {
-        const response = await fetch(ITUNES_SEARCH_URL);
+        const searchUrl = `${DEEZER_SEARCH_URL}?q=${encodeURIComponent('raye where is my husband')}&limit=5`;
+        const fetchUrl = `${CORS_PROXY}${encodeURIComponent(searchUrl)}`;
+        
+        const response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+        });
         const data = await response.json();
         
         // Find the track "Where Is My Husband!" by RAYE
-        const track = data.results?.find(t => 
-          t.trackName?.toLowerCase().includes('husband') && 
-          t.artistName?.toLowerCase().includes('raye')
-        ) || data.results?.[0];
+        const track = data.data?.find(t => 
+          t.title?.toLowerCase().includes('husband') && 
+          t.artist?.name?.toLowerCase().includes('raye')
+        ) || data.data?.[0];
         
-        if (track?.previewUrl) {
-          previewUrlRef.current = track.previewUrl;
-          audioRef.current = new Audio(track.previewUrl);
+        if (track?.preview) {
+          previewUrlRef.current = track.preview;
+          audioRef.current = new Audio(track.preview);
           audioRef.current.volume = 0.5;
           
           // Try to autoplay
@@ -46,12 +53,10 @@ function useWelcomeSound() {
           }
         } else {
           // No preview found, don't show button
-          console.log('No iTunes preview found');
+          console.log('No Deezer preview found');
         }
       } catch (error) {
-        console.log('Failed to fetch iTunes preview:', error);
-        // Still show prompt - maybe local file exists
-        setShowPrompt(true);
+        console.log('Failed to fetch Deezer preview:', error);
       } finally {
         setIsLoading(false);
       }
@@ -80,24 +85,20 @@ function useWelcomeSound() {
   return { showPrompt, playSound, hasPlayed, isLoading };
 }
 
-// Sound prompt component - prominent on mobile
+// Sound prompt component
 function SoundPrompt({ onPlay }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed inset-x-4 top-4 z-[9999] flex justify-center"
+    <motion.button
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      onClick={onPlay}
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center gap-2 hover:bg-white transition-colors cursor-pointer"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <button
-        onClick={onPlay}
-        className="bg-navy text-white rounded-full px-6 py-4 shadow-2xl flex items-center gap-3 active:scale-95 transition-transform border-2 border-white/20"
-      >
-        <Volume2 className="w-6 h-6" />
-        <span className="text-base font-semibold">Tik voor muziek! 🎵</span>
-      </button>
-    </motion.div>
+      <Volume2 className="w-5 h-5 text-navy" />
+      <span className="text-navy text-sm font-medium">Tik voor muziek! 🎵</span>
+    </motion.button>
   );
 }
 
