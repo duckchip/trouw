@@ -43,6 +43,17 @@ function useWelcomeSound() {
           audioRef.current = new Audio(track.preview);
           audioRef.current.volume = 0.5;
           
+          // Fade out at end of song
+          audioRef.current.addEventListener('timeupdate', () => {
+            const audio = audioRef.current;
+            if (!audio) return;
+            const fadeStart = audio.duration - 3; // Start fading 3 seconds before end
+            if (audio.currentTime >= fadeStart) {
+              const fadeProgress = (audio.currentTime - fadeStart) / 3;
+              audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
+            }
+          });
+          
           // Try to autoplay
           try {
             await audioRef.current.play();
@@ -83,6 +94,30 @@ function useWelcomeSound() {
   };
 
   return { showPrompt, playSound, hasPlayed, isLoading };
+}
+
+// Dark to light page entrance overlay
+function PageEntranceOverlay() {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] bg-black pointer-events-none"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ 
+        duration: 2.5, 
+        ease: "easeOut",
+        delay: 0.3 
+      }}
+      onAnimationComplete={(definition) => {
+        // Remove from DOM after animation
+        if (definition.opacity === 0) {
+          const el = document.getElementById('page-entrance-overlay');
+          if (el) el.style.display = 'none';
+        }
+      }}
+      id="page-entrance-overlay"
+    />
+  );
 }
 
 // Sound prompt component
@@ -299,6 +334,9 @@ function App() {
   
   return (
     <div className="min-h-screen bg-cream">
+      {/* Dark to light page entrance */}
+      <PageEntranceOverlay />
+
       {/* Sound prompt if autoplay blocked */}
       <AnimatePresence>
         {showPrompt && !hasPlayed && !isLoading && (
