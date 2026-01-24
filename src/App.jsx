@@ -471,7 +471,7 @@ function App() {
             variants={fadeInUp}
             className="text-dusty tracking-[0.3em] uppercase text-sm mb-4"
           >
-            Wij gaan trouwen
+            Wij gaan trouwen!
           </motion.p>
           
           {/* Names with bird behind */}
