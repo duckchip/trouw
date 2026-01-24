@@ -480,8 +480,11 @@ function App() {
       </section>
 
       {/* RSVP Section */}
-      <section id="rsvp" className="py-16 md:py-24 px-6">
-        <div className="max-w-2xl mx-auto">
+      <section id="rsvp" className="relative py-16 md:py-24 px-6 overflow-hidden">
+        {/* Sparkles behind the form */}
+        <SparklesEffect />
+        
+        <div className="relative z-10 max-w-2xl mx-auto">
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
