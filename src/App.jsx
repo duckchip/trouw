@@ -17,33 +17,39 @@ function useWelcomeSound() {
   const [hasPlayed, setHasPlayed] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
   const audioRef = useRef(null);
   const previewUrlRef = useRef(null);
 
-  useEffect(() => {
-    // Setup audio with fade out
-    const setupAudio = (previewUrl) => {
-      console.log('Setting up audio with URL:', previewUrl);
-      
-      previewUrlRef.current = previewUrl;
-      audioRef.current = new Audio(previewUrl);
-      audioRef.current.volume = 0.5;
-      
-      // Fade out at end of song
-      audioRef.current.addEventListener('timeupdate', () => {
-        const audio = audioRef.current;
-        if (!audio || !audio.duration) return;
-        const fadeStart = audio.duration - 3;
-        if (audio.currentTime >= fadeStart) {
-          const fadeProgress = (audio.currentTime - fadeStart) / 3;
-          audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
-        }
-      });
-      
-      return audioRef.current;
-    };
+  // Create and setup audio element
+  const createAudio = (url) => {
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    
+    // Fade out at end of song
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const fadeStart = audio.duration - 3;
+      if (audio.currentTime >= fadeStart) {
+        const fadeProgress = (audio.currentTime - fadeStart) / 3;
+        audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
+      }
+    });
+    
+    audio.addEventListener('ended', () => {
+      setIsPlaying(false);
+    });
+    
+    audio.src = url;
+    audio.load();
+    
+    return audio;
+  };
 
-    // Try iTunes API (no CORS proxy needed, supports JSONP-like)
+  useEffect(() => {
+    // Try iTunes API (no CORS proxy needed)
     const tryItunes = async () => {
       try {
         const response = await fetch(
@@ -94,21 +100,23 @@ function useWelcomeSound() {
     // Fetch preview URL - try iTunes first, then Deezer
     const fetchPreview = async () => {
       try {
-        // Try iTunes first (more reliable, no CORS issues)
         let previewUrl = await tryItunes();
         
-        // Fallback to Deezer if iTunes fails
         if (!previewUrl) {
           previewUrl = await tryDeezer();
         }
         
         if (previewUrl) {
-          setupAudio(previewUrl);
+          console.log('Found preview URL:', previewUrl);
+          previewUrlRef.current = previewUrl;
+          audioRef.current = createAudio(previewUrl);
+          setAudioReady(true);
           
           // Try to autoplay
           try {
             await audioRef.current.play();
             setHasPlayed(true);
+            setIsPlaying(true);
           } catch {
             // Autoplay blocked - show prompt
             setShowPrompt(true);
@@ -133,17 +141,49 @@ function useWelcomeSound() {
   }, []);
 
   const playSound = async () => {
-    if (hasPlayed || !audioRef.current) return;
+    if (isPlaying) return;
+    
     try {
+      // If we have a URL but audio failed, recreate it (helps on mobile)
+      if (previewUrlRef.current && (!audioRef.current || audioRef.current.error)) {
+        console.log('Recreating audio element');
+        audioRef.current = createAudio(previewUrlRef.current);
+      }
+      
+      if (!audioRef.current) {
+        console.log('No audio available');
+        return;
+      }
+      
+      // Reset to beginning if already played
+      if (audioRef.current.currentTime > 0) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.volume = 0.5;
+      }
+      
       await audioRef.current.play();
       setHasPlayed(true);
+      setIsPlaying(true);
       setShowPrompt(false);
     } catch (e) {
       console.log('Audio play failed:', e);
+      // On some browsers, we need to create a fresh audio element on user interaction
+      if (previewUrlRef.current) {
+        try {
+          console.log('Trying fresh audio element');
+          audioRef.current = createAudio(previewUrlRef.current);
+          await audioRef.current.play();
+          setHasPlayed(true);
+          setIsPlaying(true);
+          setShowPrompt(false);
+        } catch (e2) {
+          console.log('Fresh audio also failed:', e2);
+        }
+      }
     }
   };
 
-  return { showPrompt, playSound, hasPlayed, isLoading };
+  return { showPrompt, playSound, hasPlayed, isLoading, isPlaying, audioReady };
 }
 
 // Dark to light page entrance overlay
@@ -171,18 +211,37 @@ function PageEntranceOverlay() {
 }
 
 // Sound prompt component
-function SoundPrompt({ onPlay }) {
+function SoundPrompt({ onPlay, isReady }) {
+  const [tapped, setTapped] = useState(false);
+  
+  const handleClick = () => {
+    setTapped(true);
+    onPlay();
+    // Reset after a moment in case it fails
+    setTimeout(() => setTapped(false), 2000);
+  };
+  
   return (
     <motion.button
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      onClick={onPlay}
-      className="fixed left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer"
+      onClick={handleClick}
+      disabled={tapped}
+      className="fixed left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer disabled:opacity-70"
       style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
     >
-      <Volume2 className="w-5 h-5 text-navy flex-shrink-0" />
-      <span className="text-navy text-sm font-medium whitespace-nowrap">Tik voor muziek! 🎵</span>
+      {tapped ? (
+        <>
+          <div className="w-5 h-5 border-2 border-navy/30 border-t-navy rounded-full animate-spin flex-shrink-0" />
+          <span className="text-navy text-sm font-medium whitespace-nowrap">Laden...</span>
+        </>
+      ) : (
+        <>
+          <Volume2 className="w-5 h-5 text-navy flex-shrink-0" />
+          <span className="text-navy text-sm font-medium whitespace-nowrap">Tik voor muziek! 🎵</span>
+        </>
+      )}
     </motion.button>
   );
 }
@@ -380,7 +439,7 @@ const staggerContainer = {
 
 function App() {
   const weddingDate = new Date('2026-07-31');
-  const { showPrompt, playSound, hasPlayed, isLoading } = useWelcomeSound();
+  const { showPrompt, playSound, hasPlayed, isLoading, audioReady } = useWelcomeSound();
   
   return (
     <div className="min-h-screen bg-cream">
@@ -390,7 +449,7 @@ function App() {
       {/* Sound prompt if autoplay blocked */}
       <AnimatePresence>
         {showPrompt && !hasPlayed && !isLoading && (
-          <SoundPrompt onPlay={playSound} />
+          <SoundPrompt onPlay={playSound} isReady={audioReady} />
         )}
       </AnimatePresence>
 
