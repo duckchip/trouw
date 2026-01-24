@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 export default function LoveCounter() {
   const [elapsed, setElapsed] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   
-  // First kiss at Pukkelpop: August 20, 2022
-  const firstDate = new Date('2022-08-20T14:30:00');
+  // First date: July 31, 2022 (exactly 4 years before the wedding!)
+  const firstDate = new Date('2022-07-31T14:30:00');
 
   useEffect(() => {
     const calculateElapsed = () => {
@@ -56,7 +56,7 @@ export default function LoveCounter() {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        {/* Pukkelpop kiss photo */}
+        {/* First date photo */}
         <motion.div
           className="mb-6"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -67,7 +67,7 @@ export default function LoveCounter() {
           <div className="relative inline-block">
             <img 
               src="/images/wij.jpeg" 
-              alt="Onze eerste kus op Pukkelpop 2022"
+              alt="Onze eerste date"
               className="w-72 h-72 md:w-96 md:h-96 object-cover object-top rounded-full shadow-lg border-4 border-white"
             />
             <motion.div
@@ -75,15 +75,16 @@ export default function LoveCounter() {
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
             >
-              💋
+              ❤️
             </motion.div>
           </div>
         </motion.div>
         
         <h3 className="font-serif text-2xl md:text-3xl text-navy mb-1">
-          Onze eerste kus
+          Onze eerste date
         </h3>
-        <p className="text-dusty text-sm mb-5">Pukkelpop 2022</p>
+        <p className="text-dusty text-sm">31 juli 2022</p>
+        <p className="text-dusty/60 text-xs italic mb-5">Exact 4 jaar voor de grote dag ✨</p>
 
         {/* Counter */}
         <div className="flex justify-center items-center gap-1 md:gap-3">
