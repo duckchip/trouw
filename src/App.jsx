@@ -209,7 +209,7 @@ function SoundPrompt({ onPlay }) {
       exit={{ opacity: 0, y: -20 }}
       onClick={handleClick}
       disabled={tapped}
-      className="fixed left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer disabled:opacity-70"
+      className="fixed left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg hidden md:flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer disabled:opacity-70"
       style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
     >
       {tapped ? (
