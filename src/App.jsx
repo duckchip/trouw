@@ -131,8 +131,8 @@ function SoundPrompt({ onPlay }) {
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg flex items-center gap-2 hover:bg-white transition-colors cursor-pointer"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <Volume2 className="w-5 h-5 text-navy" />
-      <span className="text-navy text-sm font-medium">Tik voor muziek! 🎵</span>
+      <Volume2 className="w-5 h-5 text-navy flex-shrink-0" />
+      <span className="text-navy text-sm font-medium whitespace-nowrap">Tik voor muziek! 🎵</span>
     </motion.button>
   );
 }
