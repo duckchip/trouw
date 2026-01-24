@@ -647,11 +647,11 @@ export default function RSVPForm() {
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-navy font-medium">
                   <Clock className="w-4 h-4" />
-                  {guests.length > 1 ? 'Vanaf welk moment zijn jullie erbij?' : 'Vanaf welk moment ben je erbij?'}
+                  {guests.length > 1 ? 'Vanaf welk moment kunnen jullie erbij zijn?' : 'Vanaf welk moment kan je erbij zijn?'}
                 </label>
                 <div
-                  className={`grid grid-cols-1 gap-3 ${
-                    availableEvents.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'
+                  className={`grid grid-cols-2 gap-3 ${
+                    availableEvents.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
                   }`}
                 >
                   {availableEvents.map((event) => (
