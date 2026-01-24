@@ -66,7 +66,7 @@ export default function LoveCounter() {
         >
           <div className="relative inline-block">
             <img 
-              src="/images/pukkelpop2022.jpg" 
+              src="/images/wij.jpeg" 
               alt="Onze eerste kus op Pukkelpop 2022"
               className="w-72 h-72 md:w-96 md:h-96 object-cover object-top rounded-full shadow-lg border-4 border-white"
             />
