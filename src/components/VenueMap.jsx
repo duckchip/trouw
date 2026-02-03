@@ -88,18 +88,31 @@ export default function VenueMap() {
         />
       </div>
 
-      {/* Navigation Button */}
+      {/* Navigation Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
         <a
-          href={`https://www.google.com/maps/dir/?api=1&destination=${venueAddressEncoded}`}
+          href={`https://waze.com/ul?q=${venueAddressEncoded}&navigate=yes`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 flex items-center justify-center gap-2 bg-navy text-white py-3 px-6 rounded-xl hover:bg-navy-dark transition-colors font-medium"
         >
           <Navigation className="w-5 h-5" />
-          Open in Google Maps
+          Open in Waze
         </a>
         
+        <a
+          href={`https://maps.apple.com/?daddr=${venueAddressEncoded}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 flex items-center justify-center gap-2 bg-navy text-white py-3 px-6 rounded-xl hover:bg-navy-dark transition-colors font-medium"
+        >
+          <Navigation className="w-5 h-5" />
+          Open in Apple Maps
+        </a>
+      </div>
+      
+      {/* Contact */}
+      <div className="flex justify-center">
         <button
           type="button"
           onClick={handleEmailClick}
