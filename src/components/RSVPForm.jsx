@@ -73,7 +73,7 @@ const INVITE_CODES = {
 const INVITE_DESCRIPTIONS = {
   'ceremony': {
     title: 'Jullie zijn uitgenodigd voor de huwelijksceremonie',
-    description: 'Om 10:30 trouwen we in het Oude Vredegerecht te Berchem. We verwachten jullie tussen 10:00 en 10:30.',
+    description: <>Om <strong>10:30</strong> trouwen we in het Oude Vredegerecht te Berchem. We verwachten jullie tussen <strong>10:00</strong> en <strong>10:30</strong>.</>,
     icon: '💍',
     extraLocation: {
       name: 'Oude Vredegerecht',
@@ -82,7 +82,7 @@ const INVITE_DESCRIPTIONS = {
   },
   'ceremonyall': {
     title: 'Jullie zijn uitgenodigd voor de hele dag',
-    description: 'Om 10:30 trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf 17:00 in Outfort voor de receptie, het diner en het feest.',
+    description: <>Om <strong>10:30</strong> trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf <strong>17:00</strong> in Outfort voor de receptie, het diner en het feest.</>,
     icon: '💒',
     extraLocation: {
       name: 'Oude Vredegerecht',
@@ -91,22 +91,22 @@ const INVITE_DESCRIPTIONS = {
   },
   'reception': {
     title: 'Jullie zijn uitgenodigd voor de receptie',
-    description: 'Vanaf 17:00 verwelkomen we jullie graag voor een gezellige receptie in Outfort.',
+    description: <>Vanaf <strong>17:00</strong> verwelkomen we jullie graag voor een gezellige receptie in Outfort.</>,
     icon: '🥂',
   },
   'dinner': {
     title: 'Jullie zijn uitgenodigd voor de receptie en het diner',
-    description: 'Vanaf 17:00 verwelkomen we jullie graag in Outfort. Om 19:00 schuiven we aan voor het diner.',
+    description: <>Vanaf <strong>17:00</strong> verwelkomen we jullie graag in Outfort. Om <strong>19:00</strong> schuiven we aan voor het diner.</>,
     icon: '🍽️',
   },
   'partyonly': {
     title: 'Jullie zijn uitgenodigd voor het avondfeest',
-    description: 'Vanaf 21:00 verwelkomen we jullie graag in Outfort om samen te feesten!',
+    description: <>Vanaf <strong>21:00</strong> verwelkomen we jullie graag in Outfort om samen te feesten!</>,
     icon: '🎉',
   },
   'full': {
     title: 'Jullie zijn uitgenodigd voor de receptie, het diner en het feest',
-    description: 'Vanaf 17:00 verwelkomen we jullie in Outfort voor de receptie, gevolgd door het diner om 19:00 en het feest om 21:00.',
+    description: <>Vanaf <strong>17:00</strong> verwelkomen we jullie in Outfort voor de receptie, gevolgd door het diner om <strong>19:00</strong> en het feest om <strong>21:00</strong>.</>,
     icon: '🥳',
   },
   'test': {
