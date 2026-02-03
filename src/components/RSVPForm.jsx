@@ -53,7 +53,7 @@ const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || '';
 
 // All event options with times
 const allEventOptions = [
-  { id: 'ceremony', label: 'Ceremonie', time: '11:00', icon: '💍', location: 'Oude Vredegerecht, Berchem' },
+  { id: 'ceremony', label: 'Burgerlijk huwelijk & een glaasje', time: '10:30', icon: '💍', location: 'Oude Vredegerecht, Berchem' },
   { id: 'reception', label: 'Receptie', time: '17:00', icon: '🥂', location: 'Outfort, Hoboken' },
   { id: 'dinner', label: 'Diner', time: '19:00', icon: '🍽️', location: 'Outfort, Hoboken' },
   { id: 'party', label: 'Feest', time: '21:00', icon: '🎉', location: 'Outfort, Hoboken' },
@@ -62,7 +62,7 @@ const allEventOptions = [
 // Obfuscated invite codes - change these to your own random strings!
 // Simple, readable invite codes - easy to type!
 const INVITE_CODES = {
-  'JAWOORD': 'ceremonyall', // Ceremony + Reception + Dinner + Party (full day from 11:00)
+  'JAWOORD': 'ceremonyall', // Ceremony + Reception + Dinner + Party (full day from 10:30)
   'BUBBELS': 'reception',   // Reception only (17:00)
   'DANS': 'partyonly',      // Party only (21:00)
   'DINNER': 'full',         // Reception + Dinner + Party (17:00 onwards)
@@ -73,7 +73,7 @@ const INVITE_CODES = {
 const INVITE_DESCRIPTIONS = {
   'ceremony': {
     title: 'Jullie zijn uitgenodigd voor de huwelijksceremonie',
-    description: 'Om 11:00 trouwen we in het Oude Vredegerecht te Berchem. We verwachten jullie tussen 11:00 en 11:30.',
+    description: 'Om 10:30 trouwen we in het Oude Vredegerecht te Berchem. We verwachten jullie tussen 10:00 en 10:30.',
     icon: '💍',
     extraLocation: {
       name: 'Oude Vredegerecht',
@@ -82,7 +82,7 @@ const INVITE_DESCRIPTIONS = {
   },
   'ceremonyall': {
     title: 'Jullie zijn uitgenodigd voor de hele dag',
-    description: 'Om 11:00 trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf 17:00 in Outfort voor de receptie, het diner en het feest.',
+    description: 'Om 10:30 trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf 17:00 in Outfort voor de receptie, het diner en het feest.',
     icon: '💒',
     extraLocation: {
       name: 'Oude Vredegerecht',
