@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  /* Bordeaux/Burgundy for primary actions/headings - Burberry-inspired */
-  --color-navy: #722F37;
-  --color-navy-light: #8B3D46;
-  --color-navy-dark: #5A252C;
+  /* Primary text and actions – black */
+  --color-navy: #000000;
+  --color-navy-light: #333333;
+  --color-navy-dark: #1a1a1a;
   
-  /* Warm Tan/Beige for secondary elements - Classic Burberry */
-  --color-dusty: #a89078;
-  --color-dusty-light: #c4b09a;
-  --color-dusty-dark: #8a7460;
+  /* Silver for secondary elements */
+  --color-dusty: #9ca3af;
+  --color-dusty-light: #d1d5db;
+  --color-dusty-dark: #6b7280;
   
   /* Cream/White backgrounds */
   --color-cream: #fdfbf7;
@@ -27,9 +27,11 @@
   --color-summer-mint: #98d4bb;
   --color-summer-lavender: #e6d5f0;
   
-  /* Font families - Classic 2026 Wedding Typography */
-  --font-serif: "Playfair Display", Georgia, serif;
-  --font-sans: "Raleway", system-ui, sans-serif;
+  /* Font families - Collage art vibe */
+  --font-serif: "Bebas Neue", Impact, sans-serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  /* Cut-out newspaper headline (hero names) */
+  --font-headline: "Anton", Impact, sans-serif;
 }
 
 /* Custom scrollbar for the gallery */
@@ -58,19 +60,36 @@ html, body {
   overscroll-behavior: none;
 }
 
-/* Base styles – summer gradient shows through from App */
+/* Base styles – collage paper vibe */
 body {
   font-family: var(--font-sans);
-  font-weight: 300;
-  background: linear-gradient(180deg, #fff9f0 0%, #fff5eb 25%, #fef8f5 50%, #f8f5fc 75%, #fdf8f2 100%);
+  font-weight: 400;
+  background: linear-gradient(180deg, #f5f2ed 0%, #ebe6df 40%, #e8e3dc 100%);
   background-attachment: fixed;
   color: var(--color-navy);
   min-height: 100vh;
 }
 
-/* Softer serif – normal weight instead of bold */
+/* Collage display type – tight tracking, all-caps feel */
 .font-serif {
   font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Cut-out newspaper headline – for hero names */
+.font-headline {
+  font-family: var(--font-headline);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Main disco ball – sparkly effect */
+.disco-ball-sparkle {
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5))
+    drop-shadow(0 0 40px rgba(255, 255, 255, 0.25))
+    drop-shadow(0 0 60px rgba(255, 255, 255, 0.15))
+    brightness(1.15)
+    contrast(1.08);
 }
 
 /* Screen reader only - for accessibility */

@@ -1,4 +1,4 @@
-import { Heart, Calendar, MapPin, ChevronDown, Copy, Check, Volume2 } from 'lucide-react';
+import { Calendar, MapPin, ChevronDown, Copy, Check, Volume2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -227,17 +227,58 @@ function SoundPrompt({ onPlay }) {
   );
 }
 
-// Summer animated gradient – warm sky, peach, coral, gold, mint, lavender
+// Small disco ball – same as above date (pulse + spin), reusable
+function SmallDiscoBall({ className = '' }) {
+  return (
+    <motion.div
+      className={`inline-flex justify-center items-center drop-shadow-md ${className}`}
+      style={{ width: 32, height: 32 }}
+      animate={{ scale: [1, 1.1, 1] }}
+      transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+    >
+      <motion.div
+        className="w-full h-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+      >
+        <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Disco ball – collage art hero accent (corner), uses image
+function DiscoBall() {
+  return (
+    <motion.div
+      className="absolute top-12 right-8 sm:top-16 sm:right-12 md:top-20 md:right-16 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 pointer-events-none z-10"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, delay: 0.4 }}
+      aria-hidden
+    >
+      <motion.div
+        className="w-full h-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+      >
+        <img src="/images/discoball.png" alt="" className="w-full h-full object-contain drop-shadow-lg" />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Muted animated gradient – soft tints only
 function AnimatedGradient() {
   return (
     <motion.div
       className="absolute inset-0 pointer-events-none"
       animate={{
         background: [
-          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(255, 213, 79, 0.25) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(244, 168, 138, 0.22) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(152, 212, 187, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(255, 250, 245, 1) 0%, rgba(255, 243, 230, 0.98) 50%, rgba(245, 235, 250, 0.95) 100%)',
-          'radial-gradient(ellipse 100% 90% at 75% 15%, rgba(255, 218, 185, 0.28) 0%, transparent 45%), radial-gradient(ellipse 90% 90% at 15% 80%, rgba(230, 213, 240, 0.2) 0%, transparent 45%), radial-gradient(ellipse 80% 120% at 60% 40%, rgba(135, 206, 235, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(255, 248, 240, 1) 0%, rgba(255, 240, 245, 0.98) 50%, rgba(248, 242, 255, 0.95) 100%)',
-          'radial-gradient(ellipse 110% 85% at 30% 20%, rgba(135, 206, 235, 0.2) 0%, transparent 45%), radial-gradient(ellipse 85% 95% at 80% 70%, rgba(255, 213, 79, 0.22) 0%, transparent 45%), radial-gradient(ellipse 95% 80% at 20% 70%, rgba(244, 168, 138, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(248, 252, 255, 1) 0%, rgba(255, 248, 238, 0.98) 50%, rgba(252, 248, 255, 0.95) 100%)',
-          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(255, 213, 79, 0.25) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(244, 168, 138, 0.22) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(152, 212, 187, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(255, 250, 245, 1) 0%, rgba(255, 243, 230, 0.98) 50%, rgba(245, 235, 250, 0.95) 100%)',
+          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(210, 200, 180, 0.14) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(200, 190, 185, 0.12) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(190, 198, 188, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(250, 248, 245, 1) 0%, rgba(246, 244, 241, 1) 100%)',
+          'radial-gradient(ellipse 100% 90% at 75% 15%, rgba(205, 198, 188, 0.14) 0%, transparent 45%), radial-gradient(ellipse 90% 90% at 15% 80%, rgba(198, 195, 202, 0.1) 0%, transparent 45%), radial-gradient(ellipse 80% 120% at 60% 40%, rgba(195, 202, 198, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(249, 247, 245, 1) 0%, rgba(246, 244, 242, 1) 100%)',
+          'radial-gradient(ellipse 110% 85% at 30% 20%, rgba(195, 202, 205, 0.12) 0%, transparent 45%), radial-gradient(ellipse 85% 95% at 80% 70%, rgba(208, 200, 188, 0.12) 0%, transparent 45%), radial-gradient(ellipse 95% 80% at 20% 70%, rgba(200, 192, 188, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(247, 248, 249, 1) 0%, rgba(246, 245, 243, 1) 100%)',
+          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(210, 200, 180, 0.14) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(200, 190, 185, 0.12) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(190, 198, 188, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(250, 248, 245, 1) 0%, rgba(246, 244, 241, 1) 100%)',
         ],
       }}
       transition={{
@@ -269,6 +310,9 @@ function GiftInfo() {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
+        <div className="flex justify-center mb-3">
+          <SmallDiscoBall />
+        </div>
         <p className="text-dusty text-sm mb-2">
           💌 Een bijdrage is altijd welkom:
         </p>
@@ -319,7 +363,7 @@ function App() {
     <div 
       className="min-h-screen"
       style={{
-        background: 'linear-gradient(180deg, #fff9f0 0%, #fff5eb 20%, #fef8f5 40%, #f8f5fc 70%, #fdf8f2 100%)',
+        background: 'linear-gradient(180deg, #f5f2ed 0%, #ebe6df 40%, #e8e3dc 100%)',
       }}
     >
       {/* Dark to light page entrance */}
@@ -339,7 +383,7 @@ function App() {
           style: {
             background: '#722F37',
             color: '#fff',
-            fontFamily: 'Raleway, sans-serif',
+            fontFamily: 'DM Sans, sans-serif',
           },
           success: {
             iconTheme: { primary: '#fff', secondary: '#722F37' },
@@ -352,6 +396,7 @@ function App() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+        <DiscoBall />
         {/* Animated Gradient Background */}
         <AnimatedGradient />
 
@@ -369,44 +414,53 @@ function App() {
             Wij gaan trouwen!
           </motion.p>
           
-          {/* Names with bird behind */}
+          {/* Names with disco ball behind */}
           <motion.div 
             variants={fadeInUp}
             className="relative mb-6"
           >
-            {/* Pigeons - behind names */}
-            <motion.img
-              src="/images/pigeons.png"
-              alt=""
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 md:w-96 lg:w-[450px] h-auto opacity-[0.12] pointer-events-none"
-              animate={{ 
-                rotate: [0, 2, 0, -2, 0],
-                y: [0, -5, 0, 3, 0],
-              }}
-              transition={{ 
-                duration: 6, 
-                repeat: Infinity, 
-                ease: 'easeInOut',
-              }}
-            />
+            {/* Disco ball - behind names, spinning */}
+            <motion.div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-96 md:w-[28rem] lg:w-[520px] pointer-events-none"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            >
+              <motion.img
+                src="/images/discoball.png"
+                alt=""
+                className="disco-ball-sparkle w-full h-auto opacity-90 object-contain"
+                animate={{ y: [0, -5, 0, 3, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </motion.div>
             
-            <h1 className="relative z-10 font-serif text-6xl md:text-8xl lg:text-9xl text-navy leading-tight">
+            <h1 
+              className="relative z-10 font-headline text-6xl md:text-8xl lg:text-9xl leading-tight opacity-75"
+              style={{ color: '#722F37' }}
+            >
               Hanna
-              <span className="block text-3xl md:text-4xl lg:text-5xl text-dusty my-2 md:my-4">&</span>
+              <span className="block text-3xl md:text-4xl lg:text-5xl my-8 md:my-14 opacity-75" style={{ color: '#722F37' }}>&</span>
               Tristan
             </h1>
           </motion.div>
 
-          {/* Heart Icon */}
+          {/* Disco ball icon */}
           <motion.div 
             variants={fadeInUp}
             className="flex justify-center mb-8"
           >
             <motion.div
+              className="w-8 h-8 drop-shadow-md"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
             >
-              <Heart className="w-8 h-8 text-navy fill-navy/20" />
+              <motion.div
+                className="w-full h-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+              >
+                <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
+              </motion.div>
             </motion.div>
           </motion.div>
 
@@ -450,7 +504,7 @@ function App() {
       <section 
         className="py-16 md:py-24"
         style={{
-          background: 'linear-gradient(180deg, transparent 0%, rgba(255, 235, 220, 0.4) 50%, rgba(248, 242, 255, 0.3) 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(245, 242, 238, 0.5) 50%, rgba(242, 241, 244, 0.35) 100%)',
         }}
       >
         <motion.div 
@@ -460,6 +514,9 @@ function App() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
+          <div className="flex justify-center mb-3">
+            <SmallDiscoBall />
+          </div>
           <h2 className="font-serif text-4xl md:text-5xl text-navy mb-3">
             En toen zei ze ja! 💍
           </h2>
@@ -474,7 +531,7 @@ function App() {
         id="rsvp" 
         className="relative py-16 md:py-24 px-6 overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, rgba(255, 248, 238, 0.6) 0%, rgba(255, 240, 245, 0.5) 100%)',
+          background: 'linear-gradient(180deg, rgba(248, 246, 244, 0.5) 0%, rgba(246, 244, 243, 0.4) 100%)',
         }}
       >
         <div className="relative z-10 max-w-2xl mx-auto">
@@ -485,6 +542,9 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
+            <div className="flex justify-center mb-4">
+              <SmallDiscoBall />
+            </div>
             <h2 className="font-serif text-4xl md:text-5xl text-navy mb-4">RSVP</h2>
             <p className="text-dusty max-w-xl mx-auto">
               Kom je mee feesten? We hopen je erbij te zien!
@@ -492,7 +552,8 @@ function App() {
           </motion.div>
 
           <motion.div 
-            className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-cream-dark"
+            className="bg-white rounded-2xl p-8 md:p-12 border-2 border-navy/10 shadow-[4px_6px_0_rgba(114,47,55,0.15)]"
+            style={{ transform: 'rotate(-0.5deg)' }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -508,7 +569,7 @@ function App() {
         id="location" 
         className="py-16 md:py-24 px-6"
         style={{
-          background: 'linear-gradient(180deg, rgba(248, 242, 255, 0.4) 0%, rgba(230, 248, 240, 0.35) 50%, rgba(255, 248, 238, 0.4) 100%)',
+          background: 'linear-gradient(180deg, rgba(242, 241, 244, 0.35) 0%, rgba(240, 243, 241, 0.3) 50%, rgba(246, 245, 243, 0.35) 100%)',
         }}
       >
         <div className="max-w-4xl mx-auto">
@@ -519,8 +580,12 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-navy/10 rounded-full mb-6">
-              <MapPin className="w-8 h-8 text-navy" />
+            <div className="flex justify-center gap-4 items-center mb-6">
+              <SmallDiscoBall />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-navy/10 rounded-full">
+                <MapPin className="w-8 h-8 text-navy" />
+              </div>
+              <SmallDiscoBall />
             </div>
             <h2 className="font-serif text-4xl md:text-5xl text-navy mb-4">Locatie</h2>
             <p className="text-dusty max-w-xl mx-auto">
@@ -549,8 +614,8 @@ function App() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
         >
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart className="w-5 h-5 text-navy fill-navy/30" />
+          <div className="flex items-center justify-center gap-2 mb-4 w-5 h-5">
+            <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
           </div>
           <p className="font-serif text-2xl text-navy mb-2">Hanna & Tristan</p>
           <p className="text-dusty text-sm">
