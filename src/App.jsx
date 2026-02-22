@@ -1,5 +1,5 @@
 import { Heart, Calendar, MapPin, ChevronDown, Copy, Check, Volume2 } from 'lucide-react';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import InfiniteGallery from './components/InfiniteGallery';
@@ -227,128 +227,21 @@ function SoundPrompt({ onPlay }) {
   );
 }
 
-// Crisp bright sparkle using CSS star shape
-function CrispSparkle({ x, y, delay, size }) {
-  return (
-    <motion.div
-      className="absolute pointer-events-none"
-      style={{ 
-        left: x, 
-        top: y,
-      }}
-      initial={{ opacity: 0, scale: 0, rotate: 0 }}
-      animate={{ 
-        opacity: [0, 1, 1, 0],
-        scale: [0, 1.2, 1, 0],
-        rotate: [0, 90],
-      }}
-      transition={{
-        duration: 0.5,
-        delay,
-        repeat: Infinity,
-        repeatDelay: Math.random() * 2 + 0.8,
-        ease: "easeOut",
-      }}
-    >
-      {/* 4-point star using rotated squares */}
-      <div 
-        className="relative"
-        style={{ width: size, height: size }}
-      >
-        {/* Horizontal line */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white"
-          style={{ 
-            width: size * 2.5, 
-            height: 2,
-            boxShadow: '0 0 4px #fff, 0 0 8px #fff, 0 0 16px #c9a959',
-          }}
-        />
-        {/* Vertical line */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white"
-          style={{ 
-            width: 2, 
-            height: size * 2.5,
-            boxShadow: '0 0 4px #fff, 0 0 8px #fff, 0 0 16px #c9a959',
-          }}
-        />
-        {/* Diagonal line 1 */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/80"
-          style={{ 
-            width: size * 1.8, 
-            height: 1,
-            transform: 'translate(-50%, -50%) rotate(45deg)',
-            boxShadow: '0 0 3px #fff, 0 0 6px #c9a959',
-          }}
-        />
-        {/* Diagonal line 2 */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/80"
-          style={{ 
-            width: size * 1.8, 
-            height: 1,
-            transform: 'translate(-50%, -50%) rotate(-45deg)',
-            boxShadow: '0 0 3px #fff, 0 0 6px #c9a959',
-          }}
-        />
-        {/* Bright center */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full"
-          style={{ 
-            width: 4, 
-            height: 4,
-            boxShadow: '0 0 4px 2px #fff, 0 0 12px 4px #c9a959',
-          }}
-        />
-      </div>
-    </motion.div>
-  );
-}
-
-// Sparkles Container - Bright crisp sparkles
-function SparklesEffect() {
-  const sparkles = useMemo(() => {
-    return Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: `${Math.random() * 85 + 7}%`,
-      y: `${Math.random() * 75 + 12}%`,
-      delay: Math.random() * 3,
-      size: Math.random() * 8 + 6, // 6-14px
-    }));
-  }, []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {sparkles.map((sparkle) => (
-        <CrispSparkle 
-          key={sparkle.id} 
-          x={sparkle.x} 
-          y={sparkle.y} 
-          delay={sparkle.delay}
-          size={sparkle.size}
-        />
-      ))}
-    </div>
-  );
-}
-
-// Animated Gradient Background
+// Summer animated gradient – warm sky, peach, coral, gold, mint, lavender
 function AnimatedGradient() {
   return (
     <motion.div
       className="absolute inset-0 pointer-events-none"
       animate={{
         background: [
-          'radial-gradient(ellipse at 20% 20%, rgba(114, 47, 55, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(201, 169, 89, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
-          'radial-gradient(ellipse at 80% 30%, rgba(114, 47, 55, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 70%, rgba(201, 169, 89, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
-          'radial-gradient(ellipse at 30% 80%, rgba(114, 47, 55, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 70% 20%, rgba(201, 169, 89, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
-          'radial-gradient(ellipse at 20% 20%, rgba(114, 47, 55, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(201, 169, 89, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(253, 251, 247, 1) 0%, rgba(245, 240, 232, 1) 100%)',
+          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(255, 213, 79, 0.25) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(244, 168, 138, 0.22) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(152, 212, 187, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(255, 250, 245, 1) 0%, rgba(255, 243, 230, 0.98) 50%, rgba(245, 235, 250, 0.95) 100%)',
+          'radial-gradient(ellipse 100% 90% at 75% 15%, rgba(255, 218, 185, 0.28) 0%, transparent 45%), radial-gradient(ellipse 90% 90% at 15% 80%, rgba(230, 213, 240, 0.2) 0%, transparent 45%), radial-gradient(ellipse 80% 120% at 60% 40%, rgba(135, 206, 235, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(255, 248, 240, 1) 0%, rgba(255, 240, 245, 0.98) 50%, rgba(248, 242, 255, 0.95) 100%)',
+          'radial-gradient(ellipse 110% 85% at 30% 20%, rgba(135, 206, 235, 0.2) 0%, transparent 45%), radial-gradient(ellipse 85% 95% at 80% 70%, rgba(255, 213, 79, 0.22) 0%, transparent 45%), radial-gradient(ellipse 95% 80% at 20% 70%, rgba(244, 168, 138, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(248, 252, 255, 1) 0%, rgba(255, 248, 238, 0.98) 50%, rgba(252, 248, 255, 0.95) 100%)',
+          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(255, 213, 79, 0.25) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(244, 168, 138, 0.22) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(152, 212, 187, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(255, 250, 245, 1) 0%, rgba(255, 243, 230, 0.98) 50%, rgba(245, 235, 250, 0.95) 100%)',
         ],
       }}
       transition={{
-        duration: 15,
+        duration: 18,
         repeat: Infinity,
         ease: "easeInOut",
       }}
@@ -423,7 +316,12 @@ function App() {
   const { showPrompt, playSound, hasPlayed, isLoading } = useWelcomeSound();
   
   return (
-    <div className="min-h-screen bg-cream">
+    <div 
+      className="min-h-screen"
+      style={{
+        background: 'linear-gradient(180deg, #fff9f0 0%, #fff5eb 20%, #fef8f5 40%, #f8f5fc 70%, #fdf8f2 100%)',
+      }}
+    >
       {/* Dark to light page entrance */}
       <PageEntranceOverlay />
 
@@ -456,9 +354,6 @@ function App() {
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         {/* Animated Gradient Background */}
         <AnimatedGradient />
-        
-        {/* Sparkle Particles */}
-        <SparklesEffect />
 
         <motion.div 
           className="relative z-10 text-center px-6"
@@ -552,7 +447,12 @@ function App() {
       <LoveCounter />
 
       {/* Gallery Section - Proposal photos */}
-      <section className="py-16 md:py-24">
+      <section 
+        className="py-16 md:py-24"
+        style={{
+          background: 'linear-gradient(180deg, transparent 0%, rgba(255, 235, 220, 0.4) 50%, rgba(248, 242, 255, 0.3) 100%)',
+        }}
+      >
         <motion.div 
           className="text-center mb-8 px-6"
           initial={{ opacity: 0, y: 30 }}
@@ -570,10 +470,13 @@ function App() {
       </section>
 
       {/* RSVP Section */}
-      <section id="rsvp" className="relative py-16 md:py-24 px-6 overflow-hidden">
-        {/* Sparkles behind the form */}
-        <SparklesEffect />
-        
+      <section 
+        id="rsvp" 
+        className="relative py-16 md:py-24 px-6 overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, rgba(255, 248, 238, 0.6) 0%, rgba(255, 240, 245, 0.5) 100%)',
+        }}
+      >
         <div className="relative z-10 max-w-2xl mx-auto">
           <motion.div 
             className="text-center mb-12"
@@ -601,7 +504,13 @@ function App() {
       </section>
 
       {/* Location Section */}
-      <section id="location" className="py-16 md:py-24 px-6 bg-cream-dark/30">
+      <section 
+        id="location" 
+        className="py-16 md:py-24 px-6"
+        style={{
+          background: 'linear-gradient(180deg, rgba(248, 242, 255, 0.4) 0%, rgba(230, 248, 240, 0.35) 50%, rgba(255, 248, 238, 0.4) 100%)',
+        }}
+      >
         <div className="max-w-4xl mx-auto">
           <motion.div 
             className="text-center mb-12"

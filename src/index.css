@@ -19,6 +19,14 @@
   --color-gold: #c9a959;
   --color-gold-light: #dfc576;
   
+  /* Summer palette - warm and colourful */
+  --color-summer-sky: #87CEEB;
+  --color-summer-peach: #ffdab9;
+  --color-summer-coral: #f4a88a;
+  --color-summer-gold: #ffd54f;
+  --color-summer-mint: #98d4bb;
+  --color-summer-lavender: #e6d5f0;
+  
   /* Font families - Classic 2026 Wedding Typography */
   --font-serif: "Playfair Display", Georgia, serif;
   --font-sans: "Raleway", system-ui, sans-serif;
@@ -50,11 +58,19 @@ html, body {
   overscroll-behavior: none;
 }
 
-/* Base styles */
+/* Base styles – summer gradient shows through from App */
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-cream);
+  font-weight: 300;
+  background: linear-gradient(180deg, #fff9f0 0%, #fff5eb 25%, #fef8f5 50%, #f8f5fc 75%, #fdf8f2 100%);
+  background-attachment: fixed;
   color: var(--color-navy);
+  min-height: 100vh;
+}
+
+/* Softer serif – normal weight instead of bold */
+.font-serif {
+  font-weight: 400;
 }
 
 /* Screen reader only - for accessibility */
