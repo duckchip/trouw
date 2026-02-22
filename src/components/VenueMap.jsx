@@ -94,7 +94,7 @@ export default function VenueMap() {
           href={`https://waze.com/ul?q=${venueAddressEncoded}&navigate=yes`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 bg-navy text-white py-3 px-6 rounded-xl hover:bg-navy-dark transition-colors font-medium"
+          className="flex-1 flex items-center justify-center gap-2 bg-burgundy text-white py-3 px-6 rounded-xl hover:bg-burgundy-dark transition-colors font-medium"
         >
           <Navigation className="w-5 h-5" />
           Open in Waze
@@ -104,7 +104,7 @@ export default function VenueMap() {
           href={`https://maps.apple.com/?daddr=${venueAddressEncoded}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 bg-navy text-white py-3 px-6 rounded-xl hover:bg-navy-dark transition-colors font-medium"
+          className="flex-1 flex items-center justify-center gap-2 bg-burgundy text-white py-3 px-6 rounded-xl hover:bg-burgundy-dark transition-colors font-medium"
         >
           <Navigation className="w-5 h-5" />
           Open in Apple Maps

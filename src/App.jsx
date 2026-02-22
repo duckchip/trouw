@@ -227,7 +227,7 @@ function SoundPrompt({ onPlay }) {
   );
 }
 
-// Small disco ball – same as above date (pulse + spin), reusable
+// Small disco ball – pulse only (no spin), reusable
 function SmallDiscoBall({ className = '' }) {
   return (
     <motion.div
@@ -236,18 +236,12 @@ function SmallDiscoBall({ className = '' }) {
       animate={{ scale: [1, 1.1, 1] }}
       transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
     >
-      <motion.div
-        className="w-full h-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-      >
-        <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
-      </motion.div>
+      <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
     </motion.div>
   );
 }
 
-// Disco ball – collage art hero accent (corner), uses image
+// Disco ball – collage art hero accent (corner), no spin
 function DiscoBall() {
   return (
     <motion.div
@@ -257,13 +251,7 @@ function DiscoBall() {
       transition={{ duration: 0.6, delay: 0.4 }}
       aria-hidden
     >
-      <motion.div
-        className="w-full h-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-      >
-        <img src="/images/discoball.png" alt="" className="w-full h-full object-contain drop-shadow-lg" />
-      </motion.div>
+      <img src="/images/discoball.png" alt="" className="w-full h-full object-contain drop-shadow-lg" />
     </motion.div>
   );
 }
@@ -434,12 +422,9 @@ function App() {
               />
             </motion.div>
             
-            <h1 
-              className="relative z-10 font-headline text-6xl md:text-8xl lg:text-9xl leading-tight opacity-75"
-              style={{ color: '#722F37' }}
-            >
+            <h1 className="relative z-10 font-headline text-6xl md:text-8xl lg:text-9xl leading-tight opacity-90 text-burgundy">
               Hanna
-              <span className="block text-3xl md:text-4xl lg:text-5xl my-8 md:my-14 opacity-75" style={{ color: '#722F37' }}>&</span>
+              <span className="block text-3xl md:text-4xl lg:text-5xl my-8 md:my-14">&</span>
               Tristan
             </h1>
           </motion.div>
@@ -454,13 +439,7 @@ function App() {
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
             >
-              <motion.div
-                className="w-full h-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-              >
-                <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
-              </motion.div>
+              <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
             </motion.div>
           </motion.div>
 
@@ -479,7 +458,7 @@ function App() {
           <motion.a
             variants={fadeInUp}
             href="#rsvp"
-            className="inline-flex items-center gap-2 bg-navy text-white py-4 px-10 rounded-full font-medium text-lg hover:bg-navy-dark transition-all hover:shadow-xl shadow-lg"
+            className="inline-flex items-center gap-2 bg-burgundy text-white py-4 px-10 rounded-full font-medium text-lg hover:bg-burgundy-dark transition-all hover:shadow-xl shadow-lg"
           >
             Bevestig je komst
           </motion.a>
@@ -517,7 +496,7 @@ function App() {
           <div className="flex justify-center mb-3">
             <SmallDiscoBall />
           </div>
-          <h2 className="font-serif text-4xl md:text-5xl text-navy mb-3">
+          <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-3">
             En toen zei ze ja! 💍
           </h2>
           <p className="text-dusty text-lg mb-1">Pukkelpop, 15 augustus 2025</p>
@@ -545,14 +524,14 @@ function App() {
             <div className="flex justify-center mb-4">
               <SmallDiscoBall />
             </div>
-            <h2 className="font-serif text-4xl md:text-5xl text-navy mb-4">RSVP</h2>
+            <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-4">RSVP</h2>
             <p className="text-dusty max-w-xl mx-auto">
               Kom je mee feesten? We hopen je erbij te zien!
             </p>
           </motion.div>
 
           <motion.div 
-            className="bg-white rounded-2xl p-8 md:p-12 border-2 border-navy/10 shadow-[4px_6px_0_rgba(114,47,55,0.15)]"
+            className="bg-white rounded-2xl p-8 md:p-12 border-2 border-navy/10 shadow-[4px_6px_0_rgba(114,47,55,0.2)]"
             style={{ transform: 'rotate(-0.5deg)' }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -587,7 +566,7 @@ function App() {
               </div>
               <SmallDiscoBall />
             </div>
-            <h2 className="font-serif text-4xl md:text-5xl text-navy mb-4">Locatie</h2>
+            <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-4">Locatie</h2>
             <p className="text-dusty max-w-xl mx-auto">
               Hier vieren we het feest!
             </p>
@@ -617,7 +596,7 @@ function App() {
           <div className="flex items-center justify-center gap-2 mb-4 w-5 h-5">
             <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
           </div>
-          <p className="font-serif text-2xl text-navy mb-2">Hanna & Tristan</p>
+          <p className="font-serif text-2xl text-burgundy mb-2">Hanna & Tristan</p>
           <p className="text-dusty text-sm">
             31 Juli 2026 • Hoboken, België
           </p>

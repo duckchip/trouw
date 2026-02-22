@@ -389,7 +389,7 @@ export default function RSVPForm() {
           )}
           <button
             type="submit"
-            className="bg-navy text-white py-3 px-8 rounded-xl hover:bg-navy-dark transition-colors font-medium w-full"
+            className="bg-burgundy text-white py-3 px-8 rounded-xl hover:bg-burgundy-dark transition-colors font-medium w-full"
           >
             Ga verder
           </button>
@@ -608,8 +608,8 @@ export default function RSVPForm() {
             onClick={() => setAttendance(true)}
             className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-xl border-2 transition-all ${
               attendance === true
-                ? 'bg-navy text-white border-navy shadow-lg'
-                : 'bg-white text-navy border-cream-dark hover:border-navy/30'
+                ? 'bg-burgundy text-white border-burgundy shadow-lg'
+                : 'bg-white text-navy border-cream-dark hover:border-burgundy/30'
             }`}
           >
             <Check className="w-5 h-5" />
@@ -661,8 +661,8 @@ export default function RSVPForm() {
                       onClick={() => setEventType(event.id)}
                       className={`flex flex-col items-center gap-2 py-4 px-4 rounded-xl border-2 transition-all ${
                         eventType === event.id
-                          ? 'bg-navy text-white border-navy shadow-lg'
-                          : 'bg-white text-navy border-cream-dark hover:border-navy/30'
+? 'bg-burgundy text-white border-burgundy shadow-lg'
+                      : 'bg-white text-navy border-cream-dark hover:border-burgundy/30'
                       }`}
                     >
                       <span className="text-2xl">{event.icon}</span>
@@ -738,7 +738,7 @@ export default function RSVPForm() {
       <button
         type="submit"
         disabled={isSubmitting || attendance === null}
-        className="w-full flex items-center justify-center gap-2 bg-navy text-white py-4 px-8 rounded-xl font-medium text-lg hover:bg-navy-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+        className="w-full flex items-center justify-center gap-2 bg-burgundy text-white py-4 px-8 rounded-xl font-medium text-lg hover:bg-burgundy-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
       >
         {isSubmitting ? (
           <>
