@@ -1,24 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  /* Primary text and actions – black */
+  /* Wedding card – terracotta + magenta on blush (matches invitation) */
   --color-navy: #000000;
   --color-navy-light: #333333;
   --color-navy-dark: #1a1a1a;
   
-  /* Burgundy – wedding accent */
-  --color-burgundy: #722F37;
-  --color-burgundy-light: #8b3d46;
-  --color-burgundy-dark: #5c262d;
+  --color-burgundy: #B1494A;
+  --color-burgundy-light: #c85d5e;
+  --color-burgundy-dark: #963d3f;
   
-  /* Silver for secondary elements */
-  --color-dusty: #9ca3af;
-  --color-dusty-light: #d1d5db;
-  --color-dusty-dark: #6b7280;
+  --color-magenta: #D54B83;
+  --color-magenta-light: #e0669a;
+  --color-magenta-dark: #b83d6f;
   
-  /* Cream/White backgrounds */
-  --color-cream: #fdfbf7;
-  --color-cream-dark: #f5f0e8;
+  /* Blush frame + inner (card border / paper) */
+  --color-card-blush: #F2D9D1;
+  --color-card-frame: #e0bcb4;
+  --color-card-inner: #fef8f6;
+  
+  /* Muted rose-gray for secondary copy */
+  --color-dusty: #8b787b;
+  --color-dusty-light: #b5a5a8;
+  --color-dusty-dark: #6b5c5f;
+  
+  --color-cream: #fef8f6;
+  --color-cream-dark: #f5e8e4;
   
   /* Accent colors - Burberry gold */
   --color-gold: #c9a959;
@@ -48,6 +55,10 @@
   display: none;
 }
 
+#root {
+  min-height: 100%;
+}
+
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
@@ -65,14 +76,29 @@ html, body {
   overscroll-behavior: none;
 }
 
-/* Base styles – collage paper vibe */
+/* Thick blush “frame” like the printed card */
+html {
+  background-color: var(--color-card-frame);
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  min-height: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   font-weight: 400;
-  background: linear-gradient(180deg, #f5f2ed 0%, #ebe6df 40%, #e8e3dc 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-card-blush) 0%,
+    var(--color-card-inner) 45%,
+    #fceee9 100%
+  );
   background-attachment: fixed;
   color: var(--color-navy);
-  min-height: 100vh;
+  min-height: calc(100vh - 24px);
+  min-height: calc(100dvh - 24px);
+  border-radius: 2px;
+  box-shadow: 0 8px 32px rgba(45, 24, 28, 0.08);
 }
 
 /* Collage display type – tight tracking, all-caps feel */
@@ -81,11 +107,20 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* Cut-out newspaper headline – for hero names */
+/* Bold block display – invitation headline feel */
 .font-headline {
   font-family: var(--font-headline);
   font-weight: 400;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* Light sans for dates / fine print (card “31 JULI” style) */
+.font-card-detail {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* Main disco ball – sparkly effect */

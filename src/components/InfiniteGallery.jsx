@@ -280,7 +280,7 @@ export default function InfiniteGallery() {
 
       <div 
         ref={containerRef}
-        className="relative w-full overflow-hidden py-12 bg-cream-dark/50"
+        className="relative w-full overflow-hidden py-12 bg-card-blush/40"
         onMouseEnter={() => setIsInteracting(true)}
         onMouseLeave={() => setIsInteracting(false)}
         onTouchStart={() => setIsInteracting(true)}
@@ -289,8 +289,8 @@ export default function InfiniteGallery() {
         aria-label="Fotogalerij van de verloving"
       >
         {/* Gradient overlays for smooth edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-cream to-transparent z-10 pointer-events-none" aria-hidden="true" />
-        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-cream to-transparent z-10 pointer-events-none" aria-hidden="true" />
+        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-card-inner to-transparent z-10 pointer-events-none" aria-hidden="true" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-card-inner to-transparent z-10 pointer-events-none" aria-hidden="true" />
         
         {/* Drag hint */}
         <motion.p 
@@ -324,7 +324,7 @@ export default function InfiniteGallery() {
               key={index}
               role="listitem"
               tabIndex={0}
-              className="flex-shrink-0 w-72 h-48 md:w-96 md:h-64 rounded-xl overflow-hidden shadow-lg cursor-pointer focus:outline-none focus:ring-4 focus:ring-navy focus:ring-offset-2"
+              className="flex-shrink-0 w-72 h-48 md:w-96 md:h-64 rounded-xl overflow-hidden shadow-lg cursor-pointer focus:outline-none focus:ring-4 focus:ring-burgundy focus:ring-offset-2 focus:ring-offset-[#fef8f6]"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.3 }}

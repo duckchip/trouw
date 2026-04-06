@@ -33,8 +33,8 @@ export default function LoveCounter() {
 
   const TimeBlock = ({ value, label }) => (
     <div className="flex flex-col items-center">
-      <div className="bg-white rounded-xl shadow-md border border-cream-dark px-2 py-1.5 md:px-4 md:py-2 min-w-[50px] md:min-w-[70px]">
-        <span className="font-serif text-xl md:text-3xl text-navy font-medium tabular-nums">
+      <div className="bg-white rounded-xl shadow-md border border-burgundy/10 px-2 py-1.5 md:px-4 md:py-2 min-w-[50px] md:min-w-[70px]">
+        <span className="font-serif text-xl md:text-3xl text-burgundy font-medium tabular-nums">
           {value.toString().padStart(2, '0')}
         </span>
       </div>
@@ -48,7 +48,7 @@ export default function LoveCounter() {
   ];
 
   return (
-    <section id="love-counter" className="py-12 md:py-16 px-6 bg-gradient-to-b from-cream to-white">
+    <section id="love-counter" className="py-12 md:py-16 px-6 bg-gradient-to-b from-card-inner via-white to-card-blush/30">
       <motion.div
         className="max-w-2xl mx-auto text-center"
         initial={{ opacity: 0, y: 20 }}
@@ -68,7 +68,7 @@ export default function LoveCounter() {
             <img 
               src="/images/wij.jpeg" 
               alt="Onze eerste date"
-              className="w-72 h-72 md:w-96 md:h-96 object-cover object-top rounded-full shadow-lg border-4 border-white"
+              className="w-72 h-72 md:w-96 md:h-96 object-cover object-top rounded-full shadow-lg border-4 border-card-blush grayscale hover:grayscale-0 transition-[filter] duration-500"
             />
             <motion.div
               className="absolute -bottom-2 -right-2 text-3xl bg-white rounded-full p-2 shadow-md"
@@ -80,7 +80,7 @@ export default function LoveCounter() {
           </div>
         </motion.div>
         
-        <h3 className="font-serif text-2xl md:text-3xl text-navy mb-1">
+        <h3 className="font-serif text-2xl md:text-3xl text-burgundy mb-1">
           Onze eerste date
         </h3>
         <p className="text-dusty text-sm">31 juli 2022</p>
@@ -89,11 +89,11 @@ export default function LoveCounter() {
         {/* Counter */}
         <div className="flex justify-center items-center gap-1 md:gap-3">
           <TimeBlock value={elapsed.days} label="dagen" />
-          <span className="text-dusty text-xl md:text-2xl font-light mt-[-16px]">:</span>
+          <span className="text-magenta/70 text-xl md:text-2xl font-light mt-[-16px]">:</span>
           <TimeBlock value={elapsed.hours} label="uren" />
-          <span className="text-dusty text-xl md:text-2xl font-light mt-[-16px]">:</span>
+          <span className="text-magenta/70 text-xl md:text-2xl font-light mt-[-16px]">:</span>
           <TimeBlock value={elapsed.minutes} label="min" />
-          <span className="text-dusty text-xl md:text-2xl font-light mt-[-16px]">:</span>
+          <span className="text-magenta/70 text-xl md:text-2xl font-light mt-[-16px]">:</span>
           <TimeBlock value={elapsed.seconds} label="sec" />
         </div>
 
@@ -107,7 +107,7 @@ export default function LoveCounter() {
           {milestones.map((milestone, index) => (
             <motion.div
               key={index}
-              className="flex items-center gap-3 bg-white rounded-xl shadow-sm border border-cream-dark px-5 py-3"
+              className="flex items-center gap-3 bg-white rounded-xl shadow-sm border border-burgundy/10 px-5 py-3"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -115,7 +115,7 @@ export default function LoveCounter() {
             >
               <span className="text-2xl">{milestone.emoji}</span>
               <div className="text-left">
-                <p className="font-medium text-navy text-sm">{milestone.title}</p>
+                <p className="font-medium text-burgundy text-sm">{milestone.title}</p>
                 <p className="text-dusty text-xs">{milestone.date}</p>
               </div>
             </motion.div>

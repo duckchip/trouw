@@ -1,177 +1,17 @@
-import { Calendar, MapPin, ChevronDown, Copy, Check, Volume2 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, MapPin, ChevronDown, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import InfiniteGallery from './components/InfiniteGallery';
 import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
 import LoveCounter from './components/LoveCounter';
 
-// Music APIs for preview
-const DEEZER_SEARCH_URL = 'https://api.deezer.com/search';
-const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
-const CORS_PROXY = 'https://corsproxy.io/?';
-
-// Hook to handle welcome sound on page load
-function useWelcomeSound() {
-  const [hasPlayed, setHasPlayed] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const previewUrlRef = useRef(null);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    // Try iTunes API (no CORS proxy needed)
-    const tryItunes = async () => {
-      try {
-        const response = await fetch(
-          `${ITUNES_SEARCH_URL}?term=${encodeURIComponent('raye where is my husband')}&media=music&limit=5`
-        );
-        const data = await response.json();
-        
-        const track = data.results?.find(t => 
-          t.trackName?.toLowerCase().includes('husband') && 
-          t.artistName?.toLowerCase().includes('raye')
-        ) || data.results?.[0];
-        
-        if (track?.previewUrl) {
-          return track.previewUrl;
-        }
-      } catch (e) {
-        console.log('iTunes search failed:', e);
-      }
-      return null;
-    };
-
-    // Try Deezer API with proxy
-    const tryDeezer = async () => {
-      try {
-        const searchUrl = `${DEEZER_SEARCH_URL}?q=${encodeURIComponent('raye where is my husband')}&limit=5`;
-        const fetchUrl = `${CORS_PROXY}${encodeURIComponent(searchUrl)}`;
-        
-        const response = await fetch(fetchUrl, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
-        const data = await response.json();
-        
-        const track = data.data?.find(t => 
-          t.title?.toLowerCase().includes('husband') && 
-          t.artist?.name?.toLowerCase().includes('raye')
-        ) || data.data?.[0];
-        
-        if (track?.preview) {
-          return track.preview;
-        }
-      } catch (e) {
-        console.log('Deezer search failed:', e);
-      }
-      return null;
-    };
-
-    // Fetch preview URL - try iTunes first, then Deezer
-    const fetchPreview = async () => {
-      try {
-        let previewUrl = await tryItunes();
-        
-        if (!previewUrl) {
-          previewUrl = await tryDeezer();
-        }
-        
-        if (previewUrl) {
-          console.log('Found preview URL:', previewUrl);
-          previewUrlRef.current = previewUrl;
-          
-          // Try to autoplay (will likely fail on mobile)
-          try {
-            audioRef.current = new Audio(previewUrl);
-            audioRef.current.volume = 0.5;
-            await audioRef.current.play();
-            setHasPlayed(true);
-            
-            // Add fade out
-            audioRef.current.addEventListener('timeupdate', () => {
-              const audio = audioRef.current;
-              if (!audio || !audio.duration) return;
-              const fadeStart = audio.duration - 3;
-              if (audio.currentTime >= fadeStart) {
-                const fadeProgress = (audio.currentTime - fadeStart) / 3;
-                audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
-              }
-            });
-          } catch {
-            // Autoplay blocked - show prompt
-            setShowPrompt(true);
-          }
-        } else {
-          console.log('No preview found from any source');
-        }
-      } catch (error) {
-        console.log('Failed to fetch preview:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Small delay to let page settle
-    const timeout = setTimeout(fetchPreview, 800);
-
-    return () => {
-      clearTimeout(timeout);
-      audioRef.current?.pause();
-    };
-  }, []);
-
-  // Play sound - creates fresh audio on user gesture for mobile compatibility
-  const playSound = () => {
-    if (!previewUrlRef.current) {
-      console.log('No preview URL available');
-      return;
-    }
-    
-    try {
-      // Always create fresh audio element on user gesture (required for mobile)
-      const audio = new Audio(previewUrlRef.current);
-      audio.volume = 0.5;
-      
-      // Add fade out at end
-      audio.addEventListener('timeupdate', () => {
-        if (!audio.duration) return;
-        const fadeStart = audio.duration - 3;
-        if (audio.currentTime >= fadeStart) {
-          const fadeProgress = (audio.currentTime - fadeStart) / 3;
-          audio.volume = Math.max(0, 0.5 * (1 - fadeProgress));
-        }
-      });
-      
-      // Play immediately within the user gesture
-      const playPromise = audio.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log('Audio playing successfully');
-            audioRef.current = audio;
-            setHasPlayed(true);
-            setShowPrompt(false);
-          })
-          .catch((error) => {
-            console.log('Play failed:', error);
-          });
-      }
-    } catch (e) {
-      console.log('Audio error:', e);
-    }
-  };
-
-  return { showPrompt, playSound, hasPlayed, isLoading };
-}
-
 // Dark to light page entrance overlay
 function PageEntranceOverlay() {
   return (
     <motion.div
-      className="fixed inset-0 z-[100] bg-black pointer-events-none"
+      className="fixed inset-0 z-[100] pointer-events-none bg-[#2d181c]"
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
       transition={{ 
@@ -188,42 +28,6 @@ function PageEntranceOverlay() {
       }}
       id="page-entrance-overlay"
     />
-  );
-}
-
-// Sound prompt component
-function SoundPrompt({ onPlay }) {
-  const [tapped, setTapped] = useState(false);
-  
-  const handleClick = () => {
-    setTapped(true);
-    onPlay();
-    // Reset after a moment in case it fails
-    setTimeout(() => setTapped(false), 2000);
-  };
-  
-  return (
-    <motion.button
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      onClick={handleClick}
-      disabled={tapped}
-      className="fixed left-1/2 -translate-x-1/2 z-50 bg-white/95 backdrop-blur-sm border border-gold/30 rounded-full px-5 py-2.5 shadow-lg hidden md:flex items-center justify-center gap-2 hover:bg-white transition-colors cursor-pointer disabled:opacity-70"
-      style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
-    >
-      {tapped ? (
-        <>
-          <div className="w-5 h-5 border-2 border-navy/30 border-t-navy rounded-full animate-spin flex-shrink-0" />
-          <span className="text-navy text-sm font-medium whitespace-nowrap">Laden...</span>
-        </>
-      ) : (
-        <>
-          <Volume2 className="w-5 h-5 text-navy flex-shrink-0" />
-          <span className="text-navy text-sm font-medium whitespace-nowrap">Tik voor muziek! 🎵</span>
-        </>
-      )}
-    </motion.button>
   );
 }
 
@@ -263,10 +67,10 @@ function AnimatedGradient() {
       className="absolute inset-0 pointer-events-none"
       animate={{
         background: [
-          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(210, 200, 180, 0.14) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(200, 190, 185, 0.12) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(190, 198, 188, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(250, 248, 245, 1) 0%, rgba(246, 244, 241, 1) 100%)',
-          'radial-gradient(ellipse 100% 90% at 75% 15%, rgba(205, 198, 188, 0.14) 0%, transparent 45%), radial-gradient(ellipse 90% 90% at 15% 80%, rgba(198, 195, 202, 0.1) 0%, transparent 45%), radial-gradient(ellipse 80% 120% at 60% 40%, rgba(195, 202, 198, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(249, 247, 245, 1) 0%, rgba(246, 244, 242, 1) 100%)',
-          'radial-gradient(ellipse 110% 85% at 30% 20%, rgba(195, 202, 205, 0.12) 0%, transparent 45%), radial-gradient(ellipse 85% 95% at 80% 70%, rgba(208, 200, 188, 0.12) 0%, transparent 45%), radial-gradient(ellipse 95% 80% at 20% 70%, rgba(200, 192, 188, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(247, 248, 249, 1) 0%, rgba(246, 245, 243, 1) 100%)',
-          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(210, 200, 180, 0.14) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(200, 190, 185, 0.12) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(190, 198, 188, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(250, 248, 245, 1) 0%, rgba(246, 244, 241, 1) 100%)',
+          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(213, 75, 131, 0.1) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(177, 73, 74, 0.08) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(242, 217, 209, 0.5) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(254, 248, 246, 0.95) 0%, rgba(252, 238, 233, 1) 100%)',
+          'radial-gradient(ellipse 100% 90% at 75% 15%, rgba(177, 73, 74, 0.09) 0%, transparent 45%), radial-gradient(ellipse 90% 90% at 15% 80%, rgba(213, 75, 131, 0.08) 0%, transparent 45%), radial-gradient(ellipse 80% 120% at 60% 40%, rgba(242, 217, 209, 0.45) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(254, 248, 246, 0.92) 0%, rgba(252, 236, 232, 1) 100%)',
+          'radial-gradient(ellipse 110% 85% at 30% 20%, rgba(213, 75, 131, 0.08) 0%, transparent 45%), radial-gradient(ellipse 85% 95% at 80% 70%, rgba(177, 73, 74, 0.07) 0%, transparent 45%), radial-gradient(ellipse 95% 80% at 20% 70%, rgba(242, 217, 209, 0.48) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(255, 250, 248, 0.94) 0%, rgba(252, 239, 234, 1) 100%)',
+          'radial-gradient(ellipse 120% 80% at 20% 10%, rgba(213, 75, 131, 0.1) 0%, transparent 45%), radial-gradient(ellipse 80% 100% at 85% 85%, rgba(177, 73, 74, 0.08) 0%, transparent 45%), radial-gradient(ellipse 90% 70% at 50% 60%, rgba(242, 217, 209, 0.5) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(254, 248, 246, 0.95) 0%, rgba(252, 238, 233, 1) 100%)',
         ],
       }}
       transition={{
@@ -310,7 +114,7 @@ function GiftInfo() {
           </span>
           <button
             onClick={copyToClipboard}
-            className="p-1.5 hover:bg-navy/10 rounded transition-colors"
+            className="p-1.5 hover:bg-burgundy/10 rounded transition-colors"
             title="Kopieer"
           >
             {copied ? (
@@ -344,37 +148,22 @@ const staggerContainer = {
 };
 
 function App() {
-  const weddingDate = new Date('2026-07-31');
-  const { showPrompt, playSound, hasPlayed, isLoading } = useWelcomeSound();
-  
   return (
-    <div 
-      className="min-h-screen"
-      style={{
-        background: 'linear-gradient(180deg, #f5f2ed 0%, #ebe6df 40%, #e8e3dc 100%)',
-      }}
-    >
+    <div className="min-h-screen bg-transparent">
       {/* Dark to light page entrance */}
       <PageEntranceOverlay />
-
-      {/* Sound prompt if autoplay blocked */}
-      <AnimatePresence>
-        {showPrompt && !hasPlayed && !isLoading && (
-          <SoundPrompt onPlay={playSound} />
-        )}
-      </AnimatePresence>
 
       <Toaster 
         position="top-center"
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#722F37',
+            background: '#B1494A',
             color: '#fff',
             fontFamily: 'DM Sans, sans-serif',
           },
           success: {
-            iconTheme: { primary: '#fff', secondary: '#722F37' },
+            iconTheme: { primary: '#fff', secondary: '#B1494A' },
           },
           error: {
             style: { background: '#dc2626' },
@@ -397,7 +186,7 @@ function App() {
           {/* Pre-heading */}
           <motion.p 
             variants={fadeInUp}
-            className="text-dusty tracking-[0.3em] uppercase text-sm mb-4"
+            className="text-magenta font-medium tracking-[0.35em] uppercase text-xs sm:text-sm mb-5"
           >
             Wij gaan trouwen!
           </motion.p>
@@ -422,10 +211,10 @@ function App() {
               />
             </motion.div>
             
-            <h1 className="relative z-10 font-headline text-6xl md:text-8xl lg:text-9xl leading-tight opacity-90 text-burgundy">
-              Hanna
-              <span className="block text-3xl md:text-4xl lg:text-5xl my-8 md:my-14">&</span>
-              Tristan
+            <h1 className="relative z-10 font-headline text-5xl sm:text-6xl md:text-8xl lg:text-9xl leading-[0.95] opacity-95">
+              <span className="text-burgundy">Hanna</span>
+              <span className="block font-sans font-light text-magenta text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-[0.25em] my-6 md:my-10 normal-case">&</span>
+              <span className="text-magenta">Tristan</span>
             </h1>
           </motion.div>
 
@@ -446,10 +235,10 @@ function App() {
           {/* Date */}
           <motion.div 
             variants={fadeInUp}
-            className="flex items-center justify-center gap-3 text-dusty mb-8"
+            className="flex items-center justify-center gap-3 text-navy mb-8"
           >
-            <Calendar className="w-5 h-5" />
-            <span className="text-xl md:text-2xl font-light tracking-wide">
+            <Calendar className="w-5 h-5 text-magenta shrink-0" aria-hidden />
+            <span className="font-card-detail text-sm md:text-base">
               31 Juli 2026
             </span>
           </motion.div>
@@ -483,7 +272,7 @@ function App() {
       <section 
         className="py-16 md:py-24"
         style={{
-          background: 'linear-gradient(180deg, transparent 0%, rgba(245, 242, 238, 0.5) 50%, rgba(242, 241, 244, 0.35) 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(242, 217, 209, 0.35) 50%, rgba(252, 230, 236, 0.25) 100%)',
         }}
       >
         <motion.div 
@@ -499,7 +288,8 @@ function App() {
           <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-3">
             En toen zei ze ja! 💍
           </h2>
-          <p className="text-dusty text-lg mb-1">Pukkelpop, 15 augustus 2025</p>
+          <p className="text-magenta/90 text-sm font-medium tracking-wide uppercase mb-1">Pukkelpop</p>
+          <p className="text-dusty text-base">15 augustus 2025</p>
         </motion.div>
         
         <InfiniteGallery />
@@ -510,7 +300,7 @@ function App() {
         id="rsvp" 
         className="relative py-16 md:py-24 px-6 overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, rgba(248, 246, 244, 0.5) 0%, rgba(246, 244, 243, 0.4) 100%)',
+          background: 'linear-gradient(180deg, rgba(254, 248, 246, 0.9) 0%, rgba(252, 236, 240, 0.5) 100%)',
         }}
       >
         <div className="relative z-10 max-w-2xl mx-auto">
@@ -531,7 +321,7 @@ function App() {
           </motion.div>
 
           <motion.div 
-            className="bg-white rounded-2xl p-8 md:p-12 border-2 border-navy/10 shadow-[4px_6px_0_rgba(114,47,55,0.2)]"
+            className="bg-white/95 rounded-2xl p-8 md:p-12 border-2 border-burgundy/15 shadow-[4px_6px_0_rgba(177,73,74,0.18)]"
             style={{ transform: 'rotate(-0.5deg)' }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -548,7 +338,7 @@ function App() {
         id="location" 
         className="py-16 md:py-24 px-6"
         style={{
-          background: 'linear-gradient(180deg, rgba(242, 241, 244, 0.35) 0%, rgba(240, 243, 241, 0.3) 50%, rgba(246, 245, 243, 0.35) 100%)',
+          background: 'linear-gradient(180deg, rgba(242, 217, 209, 0.25) 0%, rgba(254, 248, 246, 0.6) 50%, rgba(252, 230, 236, 0.2) 100%)',
         }}
       >
         <div className="max-w-4xl mx-auto">
@@ -561,8 +351,8 @@ function App() {
           >
             <div className="flex justify-center gap-4 items-center mb-6">
               <SmallDiscoBall />
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-navy/10 rounded-full">
-                <MapPin className="w-8 h-8 text-navy" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-burgundy/10 rounded-full">
+                <MapPin className="w-8 h-8 text-burgundy" />
               </div>
               <SmallDiscoBall />
             </div>
@@ -597,7 +387,7 @@ function App() {
             <img src="/images/discoball.png" alt="" className="w-full h-full object-contain" />
           </div>
           <p className="font-serif text-2xl text-burgundy mb-2">Hanna & Tristan</p>
-          <p className="text-dusty text-sm">
+          <p className="font-card-detail text-navy text-xs md:text-sm">
             31 Juli 2026 • Hoboken, België
           </p>
           <p className="text-dusty-light text-xs mt-8">
