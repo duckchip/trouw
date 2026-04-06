@@ -44,21 +44,6 @@ function SmallDiscoBall({ className = '' }) {
   );
 }
 
-// Disco ball – collage art hero accent (corner), no spin
-function DiscoBall() {
-  return (
-    <motion.div
-      className="absolute top-12 right-8 sm:top-16 sm:right-12 md:top-20 md:right-16 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 pointer-events-none z-10"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.6, delay: 0.4 }}
-      aria-hidden
-    >
-      <img src="/images/discoball.png" alt="" className="w-full h-full object-contain drop-shadow-lg" />
-    </motion.div>
-  );
-}
-
 // Muted animated gradient – soft tints only
 function AnimatedGradient() {
   return (
@@ -172,7 +157,6 @@ function App() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        <DiscoBall />
         {/* Animated Gradient Background */}
         <AnimatedGradient />
 
