@@ -54,7 +54,7 @@ const GOOGLE_SCRIPT_URL = import.meta.env.VITE_GOOGLE_SCRIPT_URL || '';
 // All event options with times
 const allEventOptions = [
   { id: 'ceremony', label: 'Burgerlijk huwelijk & een glaasje', time: '10:30', icon: '💍', location: 'Oude Vredegerecht, Berchem' },
-  { id: 'reception', label: 'Receptie', time: '17:00', icon: '🥂', location: 'Outfort, Hoboken' },
+  { id: 'reception', label: 'Receptie', time: '16:30', icon: '🥂', location: 'Outfort, Hoboken' },
   { id: 'dinner', label: 'Diner', time: '19:00', icon: '🍽️', location: 'Outfort, Hoboken' },
   { id: 'party', label: 'Feest', time: '21:00', icon: '🎉', location: 'Outfort, Hoboken' },
 ];
@@ -63,9 +63,9 @@ const allEventOptions = [
 // Simple, readable invite codes - easy to type!
 const INVITE_CODES = {
   'JAWOORD': 'ceremonyall', // Ceremony + Reception + Dinner + Party (full day from 10:30)
-  'BUBBELS': 'reception',   // Reception only (17:00)
+  'BUBBELS': 'reception',   // Reception only (16:30)
   'DANS': 'partyonly',      // Party only (21:00)
-  'DINNER': 'full',         // Reception + Dinner + Party (17:00 onwards)
+  'DINNER': 'full',         // Reception + Dinner + Party (16:30 onwards)
   'TESTCODE': 'test',       // Test mode - full access but doesn't send to Google
 };
 
@@ -82,7 +82,7 @@ const INVITE_DESCRIPTIONS = {
   },
   'ceremonyall': {
     title: 'Jullie zijn uitgenodigd voor de hele dag',
-    description: <>Om <strong>10:30</strong> trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf <strong>17:00</strong> in Outfort voor de receptie, het diner en het feest.</>,
+    description: <>Om <strong>10:30</strong> trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf <strong>16:30</strong> in Outfort voor de receptie, het diner en het feest.</>,
     icon: '💒',
     extraLocation: {
       name: 'Oude Vredegerecht',
@@ -91,12 +91,12 @@ const INVITE_DESCRIPTIONS = {
   },
   'reception': {
     title: 'Jullie zijn uitgenodigd voor de receptie',
-    description: <>Vanaf <strong>17:00</strong> verwelkomen we jullie graag voor een gezellige receptie in Outfort.</>,
+    description: <>Vanaf <strong>16:30</strong> verwelkomen we jullie graag voor een gezellige receptie in Outfort.</>,
     icon: '🥂',
   },
   'dinner': {
     title: 'Jullie zijn uitgenodigd voor de receptie en het diner',
-    description: <>Vanaf <strong>17:00</strong> verwelkomen we jullie graag in Outfort. Om <strong>19:00</strong> schuiven we aan voor het diner.</>,
+    description: <>Vanaf <strong>16:30</strong> verwelkomen we jullie graag in Outfort. Om <strong>19:00</strong> schuiven we aan voor het diner.</>,
     icon: '🍽️',
   },
   'partyonly': {
@@ -106,7 +106,7 @@ const INVITE_DESCRIPTIONS = {
   },
   'full': {
     title: 'Jullie zijn uitgenodigd voor de receptie, het diner en het feest',
-    description: <>Vanaf <strong>17:00</strong> verwelkomen we jullie in Outfort voor de receptie, gevolgd door het diner om <strong>19:00</strong> en het feest om <strong>21:00</strong>.</>,
+    description: <>Vanaf <strong>16:30</strong> verwelkomen we jullie in Outfort voor de receptie, gevolgd door het diner om <strong>19:00</strong> en het feest om <strong>21:00</strong>.</>,
     icon: '🥳',
   },
   'test': {

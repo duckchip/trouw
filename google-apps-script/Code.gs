@@ -172,7 +172,7 @@ function doGet(e) {
       expectedFormat: {
         name: 'Guest Name',
         attendance: 'Ja/Nee',
-        eventType: 'Receptie (17:00) / Diner (19:00) / Feest (21:00)',
+        eventType: 'Receptie (16:30) / Diner (19:00) / Feest (21:00)',
         dietary: 'Dietary restrictions',
         songs: ['Song 1 - Artist 1', 'Song 2 - Artist 2', 'Song 3 - Artist 3'],
         submittedAt: 'ISO date string'

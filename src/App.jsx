@@ -269,7 +269,7 @@ function App() {
             </div>
             <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-4">RSVP</h2>
             <p className="text-dusty max-w-xl mx-auto">
-              Kom je mee feesten? We hopen je erbij te zien!
+              Kom je deze mooie dag met ons meevieren?
             </p>
           </motion.div>
 
