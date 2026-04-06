@@ -73,7 +73,15 @@ const INVITE_CODES = {
 const INVITE_DESCRIPTIONS = {
   'ceremony': {
     title: 'Jullie zijn uitgenodigd voor de huwelijksceremonie',
-    description: <>Om <strong>10:30</strong> trouwen we in het Oude Vredegerecht te Berchem. We verwachten jullie tussen <strong>10:00</strong> en <strong>10:30</strong>.</>,
+    description: (
+      <>
+        Om <strong>10:30</strong> trouwen we in het <strong>Oude Vredegerecht</strong> te Berchem.{' '}
+        We verzamelen <strong>voor het Oude Vredegerecht</strong>.{' '}
+        <strong>Kom stipt op tijd.</strong>{' '}
+        Het Oude Vredegerecht is goed bereikbaar met het openbaar vervoer.{' '}
+        We adviseren te voet, met de fiets, tram of bus te komen.
+      </>
+    ),
     icon: '💍',
     extraLocation: {
       name: 'Oude Vredegerecht',
@@ -82,7 +90,16 @@ const INVITE_DESCRIPTIONS = {
   },
   'ceremonyall': {
     title: 'Jullie zijn uitgenodigd voor de hele dag',
-    description: <>Om <strong>10:30</strong> trouwen we in het Oude Vredegerecht te Berchem. Daarna verwelkomen we jullie vanaf <strong>16:30</strong> in Outfort voor de receptie, het diner en het feest.</>,
+    description: (
+      <>
+        In de ochtend trouwen we om <strong>10:30</strong> in het <strong>Oude Vredegerecht</strong> te Berchem.{' '}
+        We verzamelen <strong>voor het Oude Vredegerecht</strong>.{' '}
+        <strong>Kom stipt op tijd.</strong>{' '}
+        Het Oude Vredegerecht is goed bereikbaar met het openbaar vervoer.{' '}
+        We adviseren te voet, met de fiets, tram of bus te komen.{' '}
+        Daarna verwelkomen we jullie vanaf <strong>16:30</strong> in Outfort voor de receptie, het diner en het feest.
+      </>
+    ),
     icon: '💒',
     extraLocation: {
       name: 'Oude Vredegerecht',
