@@ -5,7 +5,6 @@ import { Toaster } from 'react-hot-toast';
 import InfiniteGallery from './components/InfiniteGallery';
 import RSVPForm from './components/RSVPForm';
 import VenueMap from './components/VenueMap';
-import LoveCounter from './components/LoveCounter';
 
 // Dark to light page entrance overlay
 function PageEntranceOverlay() {
@@ -255,21 +254,57 @@ function App() {
 
         {/* Scroll Indicator */}
         <motion.button
-          onClick={() => document.getElementById('love-counter')?.scrollIntoView({ behavior: 'smooth' })}
+          onClick={() => document.getElementById('rsvp')?.scrollIntoView({ behavior: 'smooth' })}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer hover:scale-110 transition-transform"
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          aria-label="Scroll naar beneden"
+          aria-label="Scroll naar RSVP"
         >
           <ChevronDown className="w-8 h-8 text-dusty-light" />
         </motion.button>
       </section>
 
-      {/* Love Counter - Pukkelpop first kiss */}
-      <LoveCounter />
+      {/* RSVP – directly under hero / Bevestig je komst */}
+      <section 
+        id="rsvp" 
+        className="relative py-16 md:py-24 px-6 overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, rgba(254, 248, 246, 0.9) 0%, rgba(252, 236, 240, 0.5) 100%)',
+        }}
+      >
+        <div className="relative z-10 max-w-2xl mx-auto">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex justify-center mb-4">
+              <SmallDiscoBall />
+            </div>
+            <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-4">RSVP</h2>
+            <p className="text-dusty max-w-xl mx-auto">
+              Kom je mee feesten? We hopen je erbij te zien!
+            </p>
+          </motion.div>
+
+          <motion.div 
+            className="bg-white/95 rounded-2xl p-8 md:p-12 border-2 border-burgundy/15 shadow-[4px_6px_0_rgba(177,73,74,0.18)]"
+            style={{ transform: 'rotate(-0.5deg)' }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <RSVPForm />
+          </motion.div>
+        </div>
+      </section>
 
       {/* Gallery Section - Proposal photos */}
       <section 
+        id="gallery"
         className="py-16 md:py-24"
         style={{
           background: 'linear-gradient(180deg, transparent 0%, rgba(242, 217, 209, 0.35) 50%, rgba(252, 230, 236, 0.25) 100%)',
@@ -295,7 +330,7 @@ function App() {
         <InfiniteGallery />
       </section>
 
-      {/* Location Section – before RSVP so RSVP sits under the fold */}
+      {/* Location Section */}
       <section 
         id="location" 
         className="py-16 md:py-24 px-6"
@@ -337,44 +372,6 @@ function App() {
 
       {/* Gift Info */}
       <GiftInfo />
-
-      {/* RSVP Section */}
-      <section 
-        id="rsvp" 
-        className="relative py-16 md:py-24 px-6 overflow-hidden"
-        style={{
-          background: 'linear-gradient(180deg, rgba(254, 248, 246, 0.9) 0%, rgba(252, 236, 240, 0.5) 100%)',
-        }}
-      >
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex justify-center mb-4">
-              <SmallDiscoBall />
-            </div>
-            <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-4">RSVP</h2>
-            <p className="text-dusty max-w-xl mx-auto">
-              Kom je mee feesten? We hopen je erbij te zien!
-            </p>
-          </motion.div>
-
-          <motion.div 
-            className="bg-white/95 rounded-2xl p-8 md:p-12 border-2 border-burgundy/15 shadow-[4px_6px_0_rgba(177,73,74,0.18)]"
-            style={{ transform: 'rotate(-0.5deg)' }}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <RSVPForm />
-          </motion.div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="py-12 px-6 text-center">
