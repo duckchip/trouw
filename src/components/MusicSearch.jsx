@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Deezer API - doesn't trigger iOS Music app redirect like iTunes does
 const DEEZER_SEARCH_URL = 'https://api.deezer.com/search';
+const DEEZER_SEARCH_LIMIT = 8;
 
-// CORS proxy for production (Deezer needs proxy from browsers)
-const CORS_PROXY = 'https://corsproxy.io/?';
+// Deezer has no browser CORS — we must proxy. corsproxy.io free tier is localhost-only.
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,16 +26,19 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     };
   }, []);
 
-  // Fetch with CORS proxy
+  // Fetch via public CORS proxy (AllOrigins /raw returns Deezer JSON as text)
   const fetchWithProxy = async (url) => {
     const fetchUrl = `${CORS_PROXY}${encodeURIComponent(url)}`;
     const response = await fetch(fetchUrl, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' },
+      headers: { Accept: 'application/json' },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    return data;
+    const text = await response.text();
+    if (text.includes('corsproxy.io') || text.includes('localhost')) {
+      throw new Error('Proxy blocked');
+    }
+    return JSON.parse(text);
   };
 
   // Track current search to prevent race conditions
@@ -54,8 +58,8 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
     setSearchError(false);
 
     try {
-      // Deezer API endpoint
-      const url = `${DEEZER_SEARCH_URL}?q=${encodeURIComponent(query)}&limit=8`;
+      const q = query.trim();
+      const url = `${DEEZER_SEARCH_URL}?q=${encodeURIComponent(q)}&limit=${DEEZER_SEARCH_LIMIT}`;
       const data = await fetchWithProxy(url);
 
       // Only update if this is still the current search
