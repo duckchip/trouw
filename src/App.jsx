@@ -211,9 +211,9 @@ function App() {
             </motion.div>
             
             <h1 className="relative z-10 font-headline text-5xl sm:text-6xl md:text-8xl lg:text-9xl leading-[0.95] opacity-95">
-              <span className="text-burgundy">Hanna</span>
+              <span className="text-magenta">Hanna</span>
               <span className="block font-sans font-light text-magenta text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-[0.25em] my-6 md:my-10 normal-case">&</span>
-              <span className="text-magenta">Tristan</span>
+              <span className="text-burgundy">Tristan</span>
             </h1>
           </motion.div>
 
