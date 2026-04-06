@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const SEARCH_LIMIT = 8;
 
-/** iTunes Search supports JSONP — works from the browser without any CORS proxy. */
-function itunesSearchJsonp(term, limit) {
+function itunesSearchUrl(term, limit) {
   const params = new URLSearchParams({
     term,
     media: 'music',
@@ -13,40 +12,134 @@ function itunesSearchJsonp(term, limit) {
     limit: String(limit),
     country: 'BE',
   });
-  const baseUrl = `https://itunes.apple.com/search?${params.toString()}`;
+  return `https://itunes.apple.com/search?${params.toString()}`;
+}
+
+/** iOS / iPadOS WebKit often blocks cross-site script loads to itunes.apple.com; try proxy first. */
+function preferItunesProxyFirst() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) return true;
+  if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
+  return false;
+}
+
+function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const id = window.setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => window.clearTimeout(id));
+}
+
+/**
+ * Plain JSON iTunes URL (no callback) loaded via a CORS proxy — works when JSONP is blocked.
+ */
+async function itunesSearchViaProxy(term, limit) {
+  const jsonUrl = itunesSearchUrl(term, limit);
+  const enc = encodeURIComponent(jsonUrl);
+  const proxies = [
+    `https://api.cors.lol/?url=${enc}`,
+    `https://api.allorigins.win/get?url=${enc}`,
+  ];
+  let lastErr;
+  for (const proxyUrl of proxies) {
+    try {
+      const res = await fetchWithTimeout(proxyUrl, 14000);
+      if (!res.ok) continue;
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        continue;
+      }
+      if (data && typeof data.contents === 'string') {
+        try {
+          data = JSON.parse(data.contents);
+        } catch {
+          continue;
+        }
+      }
+      if (data && typeof data.resultCount === 'number') {
+        return data;
+      }
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Geen verbinding met zoekdienst');
+}
+
+/**
+ * JSONP — reliable on Firefox/desktop; on WebKit/iOS the script may be blocked (then use proxy).
+ */
+function itunesSearchJsonp(term, limit) {
+  const baseUrl = itunesSearchUrl(term, limit);
+  const timeoutMs = preferItunesProxyFirst() ? 9000 : 14000;
 
   return new Promise((resolve, reject) => {
     const cb = `__itunes_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error('Zoeken duurde te lang'));
-    }, 15000);
-
     let script;
-    const cleanup = () => {
-      clearTimeout(timeout);
+    let done = false;
+
+    const finishOk = (data) => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(tid);
+      window[cb] = () => {};
       try {
         delete window[cb];
       } catch {
-        window[cb] = undefined;
+        /* ignore */
       }
       if (script?.parentNode) script.parentNode.removeChild(script);
-    };
-
-    window[cb] = (data) => {
-      cleanup();
       resolve(data);
     };
+
+    const finishErr = (err) => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(tid);
+      // Swallow late Apple callbacks — deleting cb causes ReferenceError in their script on WebKit
+      window[cb] = () => {};
+      if (script?.parentNode) script.parentNode.removeChild(script);
+      window.setTimeout(() => {
+        try {
+          delete window[cb];
+        } catch {
+          /* ignore */
+        }
+      }, 5000);
+      reject(err);
+    };
+
+    const tid = window.setTimeout(() => {
+      finishErr(new Error('Zoeken duurde te lang'));
+    }, timeoutMs);
+
+    window[cb] = (data) => finishOk(data);
 
     script = document.createElement('script');
     script.src = `${baseUrl}&callback=${encodeURIComponent(cb)}`;
     script.async = true;
-    script.onerror = () => {
-      cleanup();
-      reject(new Error('Kon iTunes niet laden'));
-    };
-    document.body.appendChild(script);
+    script.referrerPolicy = 'no-referrer';
+    script.onerror = () => finishErr(new Error('Kon iTunes niet laden'));
+    (document.head || document.documentElement).appendChild(script);
   });
+}
+
+async function itunesSearch(term, limit) {
+  const proxyFirst = preferItunesProxyFirst();
+  const first = proxyFirst ? itunesSearchViaProxy : itunesSearchJsonp;
+  const second = proxyFirst ? itunesSearchJsonp : itunesSearchViaProxy;
+  try {
+    return await first(term, limit);
+  } catch (e1) {
+    try {
+      return await second(term, limit);
+    } catch (e2) {
+      throw e2;
+    }
+  }
 }
 
 function artworkLarger(url) {
@@ -89,7 +182,7 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
 
     try {
       const q = query.trim();
-      const data = await itunesSearchJsonp(q, SEARCH_LIMIT);
+      const data = await itunesSearch(q, SEARCH_LIMIT);
 
       if (searchId !== currentSearchRef.current) return;
 
