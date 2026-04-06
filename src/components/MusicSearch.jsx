@@ -2,12 +2,57 @@ import { useState, useRef, useEffect } from 'react';
 import { Search, Music, X, Plus, Disc3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Deezer API - doesn't trigger iOS Music app redirect like iTunes does
-const DEEZER_SEARCH_URL = 'https://api.deezer.com/search';
-const DEEZER_SEARCH_LIMIT = 8;
+const SEARCH_LIMIT = 8;
 
-// Deezer has no browser CORS — we must proxy. corsproxy.io free tier is localhost-only.
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+/** iTunes Search supports JSONP — works from the browser without any CORS proxy. */
+function itunesSearchJsonp(term, limit) {
+  const params = new URLSearchParams({
+    term,
+    media: 'music',
+    entity: 'song',
+    limit: String(limit),
+    country: 'BE',
+  });
+  const baseUrl = `https://itunes.apple.com/search?${params.toString()}`;
+
+  return new Promise((resolve, reject) => {
+    const cb = `__itunes_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Zoeken duurde te lang'));
+    }, 15000);
+
+    let script;
+    const cleanup = () => {
+      clearTimeout(timeout);
+      try {
+        delete window[cb];
+      } catch {
+        window[cb] = undefined;
+      }
+      if (script?.parentNode) script.parentNode.removeChild(script);
+    };
+
+    window[cb] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script = document.createElement('script');
+    script.src = `${baseUrl}&callback=${encodeURIComponent(cb)}`;
+    script.async = true;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('Kon iTunes niet laden'));
+    };
+    document.body.appendChild(script);
+  });
+}
+
+function artworkLarger(url) {
+  if (!url) return '';
+  return url.replace(/100x100bb/g, '300x300bb');
+}
 
 export default function MusicSearch({ selectedSongs, onSongsChange }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,21 +70,6 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
       }
     };
   }, []);
-
-  // Fetch via public CORS proxy (AllOrigins /raw returns Deezer JSON as text)
-  const fetchWithProxy = async (url) => {
-    const fetchUrl = `${CORS_PROXY}${encodeURIComponent(url)}`;
-    const response = await fetch(fetchUrl, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const text = await response.text();
-    if (text.includes('corsproxy.io') || text.includes('localhost')) {
-      throw new Error('Proxy blocked');
-    }
-    return JSON.parse(text);
-  };
 
   // Track current search to prevent race conditions
   const currentSearchRef = useRef(0);
@@ -59,19 +89,16 @@ export default function MusicSearch({ selectedSongs, onSongsChange }) {
 
     try {
       const q = query.trim();
-      const url = `${DEEZER_SEARCH_URL}?q=${encodeURIComponent(q)}&limit=${DEEZER_SEARCH_LIMIT}`;
-      const data = await fetchWithProxy(url);
+      const data = await itunesSearchJsonp(q, SEARCH_LIMIT);
 
-      // Only update if this is still the current search
       if (searchId !== currentSearchRef.current) return;
 
-      // Deezer returns data in a different format than iTunes
-      const tracks = (data.data || []).map((track, index) => ({
-        id: track.id?.toString() || `track-${Date.now()}-${index}`,
-        name: track.title || 'Onbekend nummer',
-        artist: track.artist?.name || 'Onbekende artiest',
-        album: track.album?.title || '',
-        albumArt: track.album?.cover_medium || track.album?.cover || '',
+      const tracks = (data.results || []).map((r, index) => ({
+        id: r.trackId != null ? String(r.trackId) : `track-${Date.now()}-${index}`,
+        name: r.trackName || 'Onbekend nummer',
+        artist: r.artistName || 'Onbekende artiest',
+        album: r.collectionName || '',
+        albumArt: artworkLarger(r.artworkUrl100 || ''),
       }));
 
       setSearchResults(tracks);
