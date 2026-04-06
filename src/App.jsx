@@ -295,45 +295,7 @@ function App() {
         <InfiniteGallery />
       </section>
 
-      {/* RSVP Section */}
-      <section 
-        id="rsvp" 
-        className="relative py-16 md:py-24 px-6 overflow-hidden"
-        style={{
-          background: 'linear-gradient(180deg, rgba(254, 248, 246, 0.9) 0%, rgba(252, 236, 240, 0.5) 100%)',
-        }}
-      >
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex justify-center mb-4">
-              <SmallDiscoBall />
-            </div>
-            <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-4">RSVP</h2>
-            <p className="text-dusty max-w-xl mx-auto">
-              Kom je mee feesten? We hopen je erbij te zien!
-            </p>
-          </motion.div>
-
-          <motion.div 
-            className="bg-white/95 rounded-2xl p-8 md:p-12 border-2 border-burgundy/15 shadow-[4px_6px_0_rgba(177,73,74,0.18)]"
-            style={{ transform: 'rotate(-0.5deg)' }}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <RSVPForm />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Location Section */}
+      {/* Location Section – before RSVP so RSVP sits under the fold */}
       <section 
         id="location" 
         className="py-16 md:py-24 px-6"
@@ -375,6 +337,44 @@ function App() {
 
       {/* Gift Info */}
       <GiftInfo />
+
+      {/* RSVP Section */}
+      <section 
+        id="rsvp" 
+        className="relative py-16 md:py-24 px-6 overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, rgba(254, 248, 246, 0.9) 0%, rgba(252, 236, 240, 0.5) 100%)',
+        }}
+      >
+        <div className="relative z-10 max-w-2xl mx-auto">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex justify-center mb-4">
+              <SmallDiscoBall />
+            </div>
+            <h2 className="font-serif text-4xl md:text-5xl text-burgundy mb-4">RSVP</h2>
+            <p className="text-dusty max-w-xl mx-auto">
+              Kom je mee feesten? We hopen je erbij te zien!
+            </p>
+          </motion.div>
+
+          <motion.div 
+            className="bg-white/95 rounded-2xl p-8 md:p-12 border-2 border-burgundy/15 shadow-[4px_6px_0_rgba(177,73,74,0.18)]"
+            style={{ transform: 'rotate(-0.5deg)' }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <RSVPForm />
+          </motion.div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="py-12 px-6 text-center">
