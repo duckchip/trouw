@@ -65,7 +65,7 @@ const INVITE_CODES = {
   'JAWOORD': 'ceremonyall', // Ceremony + Reception + Dinner + Party (full day from 10:30)
   'BUBBELS': 'reception',   // Reception only (16:30)
   'DANS': 'partyonly',      // Party only (21:00)
-  'DINNER': 'full',         // Reception + Dinner + Party (16:30 onwards)
+  'DINER': 'full',         // Receptie + diner + feest (vanaf 16:30)
   'TESTCODE': 'test',       // Test mode - full access but doesn't send to Google
 };
 
