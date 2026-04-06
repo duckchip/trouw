@@ -62,7 +62,7 @@ const allEventOptions = [
 // Obfuscated invite codes - change these to your own random strings!
 // Simple, readable invite codes - easy to type!
 const INVITE_CODES = {
-  'JAWOORD': 'ceremonyall', // Ceremony + Reception + Dinner + Party (full day from 10:30)
+  'ALLES': 'ceremonyall', // Ceremonie + receptie + diner + feest (hele dag vanaf 10:30)
   'BUBBELS': 'reception',   // Reception only (16:30)
   'DANS': 'partyonly',      // Party only (21:00)
   'DINER': 'full',         // Receptie + diner + feest (vanaf 16:30)
