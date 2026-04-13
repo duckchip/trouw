@@ -24,7 +24,7 @@ function GiftInfo() {
       className="mt-8 pt-6 border-t border-cream-dark"
     >
       <p className="text-dusty text-sm mb-2">
-        💌 Een bijdrage is altijd welkom:
+        💌 Vrijblijvende cadeautip
       </p>
       <div className="flex items-center justify-center gap-2">
         <span className="font-mono text-sm text-navy">
