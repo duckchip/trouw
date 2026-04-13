@@ -18,6 +18,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Needed so secrets stored on the "github-pages" Environment are visible to this job.
+    # Repository-level Action secrets are always available; Environment-only secrets are not.
+    environment:
+      name: github-pages
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +29,20 @@ jobs:
         with:
           node-version: "22"
           cache: npm
+
+      - name: Verify VITE_INVITE_CODES_JSON is set
+        env:
+          INVITE: ${{ secrets.VITE_INVITE_CODES_JSON }}
+        run: |
+          if [ -z "$INVITE" ]; then
+            echo "::error::VITE_INVITE_CODES_JSON is empty. Add it under Settings → Secrets and variables → Actions."
+            echo "Use either Repository secrets (recommended) or Environment secrets on github-pages (this build job uses that environment)."
+            exit 1
+          fi
+      - name: Verify VITE_INVITE_CODES_JSON is valid JSON
+        env:
+          INVITE: ${{ secrets.VITE_INVITE_CODES_JSON }}
+        run: node -e "JSON.parse(process.env.INVITE)"
 
       - run: npm ci
       - run: npm run build

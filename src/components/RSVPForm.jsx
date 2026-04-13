@@ -64,7 +64,7 @@ const allEventOptions = [
  * Zo staan ze niet in de git-repository; lokaal/productie via `.env.local` of build-secrets.
  */
 function parseInviteCodesFromEnv() {
-  const raw = import.meta.env.VITE_INVITE_CODES_JSON;
+  let raw = import.meta.env.VITE_INVITE_CODES_JSON;
   if (typeof raw !== 'string' || !raw.trim()) {
     if (import.meta.env.DEV) {
       console.warn(
@@ -72,6 +72,11 @@ function parseInviteCodesFromEnv() {
       );
     }
     return {};
+  }
+  raw = raw.trim().replace(/^\uFEFF/, '');
+  // Paste mistakes: whole JSON wrapped in single quotes
+  if (raw.length >= 2 && raw.startsWith("'") && raw.endsWith("'")) {
+    raw = raw.slice(1, -1).trim();
   }
   try {
     const parsed = JSON.parse(raw);
