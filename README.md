@@ -33,13 +33,34 @@ npm run dev
 npm run build
 ```
 
-## 📋 Environment Variables
-
-Copy `.env.example` to `.env` and fill in your values:
+## 📋 Environment variables
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
+
+Fill in `VITE_GOOGLE_SCRIPT_URL`, optional `VITE_GOOGLE_MAPS_API_KEY`, and **`VITE_INVITE_CODES_JSON`** (one-line JSON for RSVP codes). Never commit `.env.local`.
+
+## 🚀 Deploy (GitHub Pages)
+
+1. **Repository → Settings → Secrets and variables → Actions → New repository secret**  
+   Add:
+   - `VITE_GOOGLE_SCRIPT_URL` — your Google Apps Script web app URL  
+   - `VITE_INVITE_CODES_JSON` — same single-line JSON as in `.env.local`  
+   - `VITE_GOOGLE_MAPS_API_KEY` — optional; can be empty if you omit it  
+
+2. **Settings → Pages**  
+   Under **Build and deployment**, set **Source** to **GitHub Actions** (not “Deploy from a branch”).
+
+3. **Push to `main`**  
+   The workflow in `.github/workflows/deploy-pages.yml` runs `npm ci`, `npm run build` (with secrets), and publishes the `dist/` folder.
+
+4. **Custom domain (e.g. hanna-en-tristan.be)**  
+   In Pages settings, set the domain and add the DNS records GitHub shows. Keep **Enforce HTTPS** on when it’s available.
+
+**If the site is served from a subpath** (e.g. `user.github.io/repo-name/`), set `base: '/repo-name/'` in `vite.config.js` and rebuild.
+
+**Not using GitHub Pages?** Run `npm run build` locally with `.env.local` loaded, then upload the `dist/` folder to your host (Netlify, Cloudflare Pages, etc.) and configure the same variables in that host’s dashboard.
 
 ## 📄 License
 

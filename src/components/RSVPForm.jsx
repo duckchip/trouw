@@ -59,15 +59,39 @@ const allEventOptions = [
   { id: 'party', label: 'Feest', time: '21:00', icon: '🎉', location: 'Outfort, Hoboken' },
 ];
 
-// Obfuscated invite codes - change these to your own random strings!
-// Simple, readable invite codes - easy to type!
-const INVITE_CODES = {
-  'ALLES': 'ceremonyall', // Ceremonie + receptie + diner + feest (hele dag vanaf 10:30)
-  'BUBBELS': 'reception',   // Reception only (16:30)
-  'DANS': 'partyonly',      // Party only (21:00)
-  'DINER': 'full',         // Receptie + diner + feest (vanaf 16:30)
-  'TESTCODE': 'test',       // Test mode - full access but doesn't send to Google
-};
+/**
+ * Uitnodigingscodes komen uit `VITE_INVITE_CODES_JSON` (zie `.env.example`).
+ * Zo staan ze niet in de git-repository; lokaal/productie via `.env.local` of build-secrets.
+ */
+function parseInviteCodesFromEnv() {
+  const raw = import.meta.env.VITE_INVITE_CODES_JSON;
+  if (typeof raw !== 'string' || !raw.trim()) {
+    if (import.meta.env.DEV) {
+      console.warn(
+        '[RSVP] VITE_INVITE_CODES_JSON ontbreekt. Kopieer .env.example naar .env.local en vul de JSON in.'
+      );
+    }
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const out = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (typeof k === 'string' && typeof v === 'string' && k.trim() && v.trim()) {
+        out[k.trim().toUpperCase()] = v.trim();
+      }
+    }
+    return out;
+  } catch {
+    if (import.meta.env.DEV) {
+      console.error('[RSVP] VITE_INVITE_CODES_JSON is geen geldige JSON.');
+    }
+    return {};
+  }
+}
+
+const INVITE_CODES = parseInviteCodesFromEnv();
 
 // Invite level descriptions
 const INVITE_DESCRIPTIONS = {
